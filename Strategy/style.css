@@ -1,0 +1,168 @@
+html {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+@media only screen and (max-width: 600px) {
+  body {c
+    margin: 0;
+    overflow: hidden;
+  }
+
+  embed {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    touch-action: none; /* Disable default touch behavior */
+
+  }
+}
+
+
+
+.country-path {
+  filter: drop-shadow(0.4px 0.4px 0.4px black) saturate(180%) grayscale(60%);
+} 
+
+#star {
+  fill: gold;
+}
+
+g {
+  top: 0;
+  left: 0;
+} 
+
+.highlight {
+
+
+  filter: 
+    brightness(115%)
+    drop-shadow(10px 10px 10px black);
+
+}
+
+svg {
+  width: 100%;
+  height: 100%;
+}
+
+#info-container {
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  padding: 10px;
+  background-color: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 9999; /* Ensure it's displayed on top */
+}
+
+#info-container img {
+  max-width: 50%;
+  max-height: 30%;
+}
+
+#info-container div {
+  margin-bottom: 5px;
+  max-width: 5%;
+  max-height: 5%;
+}
+
+
+/* Style for the overlay boxes */
+.overlay-box {
+  position: fixed;
+  top: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  display: flex;
+  align-items: center;
+  z-index: 699;
+  padding: 10px; /* Add some padding */
+  width: auto; /* By default, width is auto */
+
+}
+
+.overlay-box.choose-country {
+  width: 100%;
+}
+/* bro what the hell😭😭😭 i never knew theres variables in css */
+:root {
+  --flag-width: 60px; /* Set a default flag width */
+--money-box-margin: calc(var(--flag-width) + 20px); /* Adjust the margin to add 30px */
+}
+
+
+
+/* Style for the flag box */
+#country-flag-box {
+  left: 0;
+  width: auto; /* Adjust the width based on the flag size */
+  height: auto; /* Allow it to adjust to the content height */
+}
+
+/* Style for the flag image */
+#country-flag {
+  width: 60px;
+  height: auto; /* Maintain the flag's aspect ratio */
+}
+
+/* Style for the money box */
+#money-box {
+  left: 0; /* Place it on the left side */
+  width: auto; /* Adjust the width based on the content size */
+  height: auto; /* Allow it to adjust to the content height */
+  display: flex; /* Make the money-box a flex container */
+  flex-direction: column; /* Stack the money icon and amount vertically */
+  margin-left: var(--money-box-margin); /* Add some space to separate the money-box from the flag */
+}
+
+
+/* Style for the money icon */
+.money-icon {
+  width: 20px;
+  height: auto;
+  margin-bottom: 5px; /* Add some space below the money icon */
+}
+
+/* Style for the text to the right of money-icon */
+#money-amount {
+  font-size: 16px; /* Adjust the font size as needed */
+}
+
+/* Style for the text inside the overlay box */
+.overlay-text {
+  font-weight: bold;
+  color: white;
+  font-size: 24px;
+}
+
+
+
+/* input */
+
+.range-slider input[type=range] {
+  -webkit-appearance: none;
+  width: 65%;
+  height: 2.5rem;
+  background-color: #C8C8C8;
+  outline: none;
+  padding: 0;
+  margin: 0;
+  opacity: 1; 
+}
+
+.range-slider input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 2rem;
+  height: 2rem;
+  background-color: #007bff;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
