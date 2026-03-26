@@ -134,4 +134,10 @@ class NetworkManager {
       changeTo: changeTo
     });
   }
+
+  playerAttack(sourceCountry, sourceProvince, destCountry, destProvince, attackStr, previousProvince) {
+    this.send('playerAttack', {
+      sourceCountry, sourceProvince, destCountry, destProvince, attackStr, previousProvince
+    });
+  }
 }

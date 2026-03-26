@@ -6,40 +6,38 @@
       "capital": "path13",
       "code": "UA",
       "ProvincesSoldiers": {
-        "path6": 100,
-        "path9": 100,
-        "path10": 100,
-        "path12": 100,
-        "path14": 100,
-        "path22": 100,
-        "path26": 100,
-        "path25": 100,
-        "path28": 100,
-        "path31": 100,
-        "path32": 100,
-        "path34": 100,
-        "path35": 100,
-        "path38": 100,
-        "path37": 100,
-        "path39": 100,
-        "path40": 100,
-        "path41": 100,
-        "path42": 100,
-        "path43": 100,
-        "path45": 100,
-        "path44": 100,
-        "path161": 100,
-        "path324": 100,
-        "path321": 100,
-        "path326": 100,
-        "path323": 100
+        "path6": 0,
+        "path9": 0,
+        "path10": 0,
+        "path12": 0,
+        "path22": 0,
+        "path26": 0,
+        "path25": 0,
+        "path28": 0,
+        "path31": 0,
+        "path32": 0,
+        "path34": 0,
+        "path35": 0,
+        "path38": 0,
+        "path37": 0,
+        "path39": 0,
+        "path40": 0,
+        "path41": 0,
+        "path42": 0,
+        "path43": 0,
+        "path45": 0,
+        "path44": 0,
+        "path161": 0,
+        "path324": 0,
+        "path321": 0,
+        "path326": 0,
+        "path323": 0
       },
       "provinces": [
         "path6",
         "path9",
         "path10",
         "path12",
-        "path14",
         "path22",
         "path26",
         "path25",
@@ -63,9 +61,10 @@
         "path326",
         "path323"
       ],
-      "treasury": 28945,
+      "treasury": 74270.33,
       "atWar": [
-        "Belarus"
+        "Belarus",
+        "Hungary"
       ],
       "recruitCost": 0.25
     },
@@ -75,12 +74,12 @@
       "code": "FR",
       "ProvincesSoldiers": {
         "path400": 100,
-        "path401": 18578,
-        "path402": 100,
+        "path401": 100,
+        "path402": 115311,
         "path403": 100,
-        "path404": 9060,
-        "path405": 100,
-        "path406": 100,
+        "path404": 18578,
+        "path405": 70896,
+        "path406": 86758,
         "path407": 100,
         "path408": 100,
         "path409": 100,
@@ -88,9 +87,9 @@
         "path411": 100,
         "path412": 100,
         "path413": 100,
-        "path414": 100,
+        "path414": 67723,
         "path415": 100,
-        "path416": 100,
+        "path416": 13290,
         "path417": 100,
         "path418": 100,
         "path419": 100,
@@ -99,13 +98,13 @@
         "path422": 100,
         "path423": 100,
         "path424": 100,
-        "path425": 100,
+        "path425": 62993,
         "path426": 100,
         "path427": 100,
-        "path428": 11175,
+        "path428": 78798,
         "path429": 100,
-        "path430": 13290,
-        "path431": 100,
+        "path430": 100,
+        "path431": 2715,
         "path432": 100,
         "path433": 100,
         "path434": 100,
@@ -119,7 +118,7 @@
         "path442": 100,
         "path443": 100,
         "path444": 100,
-        "path445": 100,
+        "path445": 28095,
         "path446": 100
       },
       "provinces": [
@@ -171,7 +170,7 @@
         "path445",
         "path446"
       ],
-      "treasury": 47530,
+      "treasury": 134245,
       "atWar": []
     },
     "Armenia": {
@@ -179,14 +178,14 @@
       "capital": "path184",
       "code": "AM",
       "ProvincesSoldiers": {
-        "path184": 6205,
-        "AM": 1410
+        "path184": 19230,
+        "AM": 19175
       },
       "provinces": [
         "path184",
         "AM"
       ],
-      "treasury": 2980,
+      "treasury": 6670,
       "atWar": []
     },
     "Belarus": {
@@ -204,10 +203,10 @@
         "path320": 0,
         "path317": 0,
         "path30": 0,
-        "path325": 36052,
+        "path325": 328954,
         "path29": 0,
         "path13": 0,
-        "path236": 3847
+        "path236": 63455
       },
       "provinces": [
         "path19",
@@ -222,10 +221,18 @@
         "path30",
         "path325",
         "path325",
+        "path325",
         "path29",
         "path13",
         "path30",
         "path29",
+        "path30",
+        "path29",
+        "path236",
+        "path325",
+        "path13",
+        "path325",
+        "path13",
         "path236",
         "path325",
         "path13",
@@ -235,10 +242,36 @@
         "path13",
         "path325",
         "path13",
+        "path325",
+        "path13",
+        "path13",
+        "path325",
+        "path13",
+        "path236",
+        "path13",
+        "path325",
+        "path13",
+        "path325",
+        "path13",
+        "path325",
+        "path13",
+        "path325",
+        "path13",
+        "path325",
+        "path13",
+        "path325",
+        "path13",
+        "path325",
+        "path13",
+        "path325",
+        "path13",
+        "path325",
+        "path13",
+        "path325",
         "path13",
         "path325"
       ],
-      "treasury": 18010,
+      "treasury": 98560,
       "atWar": [
         "Ukraine"
       ]
@@ -248,12 +281,12 @@
       "capital": "path50",
       "code": "LT",
       "ProvincesSoldiers": {
-        "path46": 1005,
-        "path47": 100,
-        "path48": 100,
-        "path49": 2895,
-        "path50": 1275,
-        "LT": 2990
+        "path46": 3935,
+        "path47": 23335,
+        "path48": 11050,
+        "path49": 31680,
+        "path50": 17800,
+        "LT": 7620
       },
       "provinces": [
         "path46",
@@ -263,7 +296,7 @@
         "path50",
         "LT"
       ],
-      "treasury": 6940,
+      "treasury": 18010,
       "atWar": []
     },
     "Georgia": {
@@ -272,12 +305,12 @@
       "code": "GE",
       "ProvincesSoldiers": {
         "GE": 100,
-        "path164": 915,
-        "path163": 100,
-        "path165": 2333,
-        "path183": 3120,
-        "path182": 6010,
-        "path181": 3435
+        "path164": 16063,
+        "path163": 16091,
+        "path165": 8373,
+        "path183": 3621,
+        "path182": 12283,
+        "path181": 6113
       },
       "provinces": [
         "GE",
@@ -288,7 +321,7 @@
         "path182",
         "path181"
       ],
-      "treasury": 7930,
+      "treasury": 20845,
       "atWar": []
     },
     "Latvia": {
@@ -298,10 +331,10 @@
       "ProvincesSoldiers": {
         "LV": 100,
         "path51": 100,
-        "path52": 2990,
-        "path53": 3570,
-        "path54": 2625,
-        "path55": 3395
+        "path52": 5555,
+        "path53": 14885,
+        "path54": 20190,
+        "path55": 27345
       },
       "provinces": [
         "LV",
@@ -311,7 +344,7 @@
         "path54",
         "path55"
       ],
-      "treasury": 6940,
+      "treasury": 18010,
       "atWar": []
     },
     "Estonia": {
@@ -322,8 +355,8 @@
         "EE": 100,
         "path57": 100,
         "path56": 100,
-        "path61": 3260,
-        "path63": 4340,
+        "path61": 35515,
+        "path63": 53200,
         "path62": 100
       },
       "provinces": [
@@ -334,7 +367,7 @@
         "path63",
         "path62"
       ],
-      "treasury": 6940,
+      "treasury": 18010,
       "atWar": []
     },
     "Finland": {
@@ -344,14 +377,14 @@
       "ProvincesSoldiers": {
         "path65": 100,
         "path64": 100,
-        "path73": 3075,
+        "path73": 66375,
         "path72": 100,
-        "path76": 5825,
+        "path76": 60750,
         "path75": 100,
         "path79": 100,
         "path82": 100,
-        "path78": 100,
-        "path83": 2175
+        "path78": 53600,
+        "path83": 34450
       },
       "provinces": [
         "path65",
@@ -365,7 +398,7 @@
         "path78",
         "path83"
       ],
-      "treasury": 10900,
+      "treasury": 29350,
       "atWar": []
     },
     "Sweden": {
@@ -373,22 +406,26 @@
       "capital": "path96",
       "code": "SE",
       "ProvincesSoldiers": {
-        "path86": 100,
-        "path85": 6860,
-        "path84": 100,
-        "path104": 100,
-        "path87": 100,
-        "path90": 100,
-        "path92": 100,
-        "path91": 12620,
-        "path93": 100,
-        "path96": 100,
-        "path98": 100,
-        "path101": 100,
-        "path100": 5280,
-        "path99": 7080,
-        "path103": 100,
-        "path102": 100
+        "path86": 0,
+        "path85": 0,
+        "path84": 0,
+        "path104": 0,
+        "path87": 0,
+        "path90": 0,
+        "path92": 0,
+        "path91": 0,
+        "path93": 0,
+        "path96": 0,
+        "path98": 0,
+        "path101": 0,
+        "path100": 0,
+        "path99": 0,
+        "path103": 0,
+        "path102": 0,
+        "path106": 0,
+        "path115": 0,
+        "DK": 395847,
+        "path108": 231777
       },
       "provinces": [
         "path86",
@@ -406,37 +443,69 @@
         "path100",
         "path99",
         "path103",
-        "path102"
+        "path102",
+        "path106",
+        "path115",
+        "DK",
+        "path108",
+        "path106",
+        "DK",
+        "path108",
+        "path108",
+        "path106",
+        "DK",
+        "DK",
+        "path106",
+        "DK",
+        "path108",
+        "path106",
+        "DK",
+        "path106",
+        "path106",
+        "DK",
+        "path106",
+        "DK",
+        "path106",
+        "DK",
+        "path108",
+        "path106",
+        "DK",
+        "path106",
+        "DK",
+        "path106",
+        "DK",
+        "DK",
+        "path106",
+        "DK",
+        "DK",
+        "path106",
+        "DK"
       ],
-      "treasury": 16840,
-      "atWar": []
+      "treasury": 81010,
+      "atWar": [
+        "Denmark"
+      ]
     },
     "Denmark": {
       "color": "#b9b071",
       "capital": "path106",
       "code": "DK",
       "ProvincesSoldiers": {
-        "DK": 100,
-        "path108": 100,
-        "path106": 8080,
-        "path105": 100,
-        "path114": 3120,
-        "path115": 8800,
-        "path117": 100,
-        "path116": 100
+        "path105": 0,
+        "path114": 0,
+        "path117": 0,
+        "path116": 0
       },
       "provinces": [
-        "DK",
-        "path108",
-        "path106",
         "path105",
         "path114",
-        "path115",
         "path117",
         "path116"
       ],
-      "treasury": 8920,
-      "atWar": []
+      "treasury": 16390,
+      "atWar": [
+        "Sweden"
+      ]
     },
     "Norway": {
       "color": "#b42217",
@@ -444,22 +513,22 @@
       "code": "NO",
       "ProvincesSoldiers": {
         "path120": 100,
-        "path125": 100,
-        "path124": 6720,
+        "path125": 50178,
+        "path124": 100,
         "path142": 100,
         "path143": 100,
         "path144": 100,
         "path150": 100,
         "path148": 100,
         "path147": 100,
-        "path151": 100,
-        "path152": 100,
-        "path156": 100,
-        "path155": 19049,
-        "path160": 5573,
-        "path157": 1365,
-        "path102": 100,
-        "path129": 100
+        "path151": 34114,
+        "path152": 42911,
+        "path156": 12576,
+        "path155": 32083,
+        "path160": 8633,
+        "path157": 16400,
+        "path102": 22785,
+        "path129": 24315
       },
       "provinces": [
         "path120",
@@ -480,7 +549,7 @@
         "path102",
         "path129"
       ],
-      "treasury": 17830,
+      "treasury": 49195,
       "atWar": []
     },
     "Ireland": {
@@ -488,14 +557,14 @@
       "capital": "path128",
       "code": "IE",
       "ProvincesSoldiers": {
-        "path128": 8188,
+        "path128": 28521,
         "path131": 100,
         "path136": 100,
         "path137": 100,
         "path134": 100,
         "path130": 100,
-        "path121": 100,
-        "path107": 12631,
+        "path121": 55740,
+        "path107": 41672,
         "path109": 100
       },
       "provinces": [
@@ -509,7 +578,7 @@
         "path107",
         "path109"
       ],
-      "treasury": 9910,
+      "treasury": 26515,
       "atWar": []
     },
     "Iceland": {
@@ -532,7 +601,7 @@
         "path97",
         "path95"
       ],
-      "treasury": 6940,
+      "treasury": 18010,
       "atWar": []
     },
     "Moldova": {
@@ -540,12 +609,12 @@
       "capital": "path7",
       "code": "MD",
       "ProvincesSoldiers": {
-        "path7": 4610,
-        "path5": 100,
-        "path3": 2490,
-        "path15": 100,
-        "path2": 5420,
-        "path18": 100
+        "path7": 13115,
+        "path5": 19960,
+        "path3": 16045,
+        "path15": 17530,
+        "path2": 16220,
+        "path18": 1815
       },
       "provinces": [
         "path7",
@@ -555,7 +624,7 @@
         "path2",
         "path18"
       ],
-      "treasury": 6940,
+      "treasury": 18010,
       "atWar": []
     },
     "Slovenia": {
@@ -563,30 +632,55 @@
       "capital": "path141",
       "code": "SI",
       "ProvincesSoldiers": {
-        "SI": 4908,
-        "path141": 1275,
-        "path140": 5341
+        "path214": 0,
+        "path213": 0,
+        "HU": 69764
       },
       "provinces": [
-        "SI",
-        "path141",
-        "path140"
+        "path214",
+        "path213",
+        "HU",
+        "path213",
+        "HU",
+        "path213",
+        "HU",
+        "path213",
+        "HU",
+        "path213",
+        "HU",
+        "path213",
+        "HU",
+        "path213",
+        "HU",
+        "path213",
+        "HU",
+        "HU",
+        "path213",
+        "HU",
+        "path213",
+        "HU",
+        "path213",
+        "HU",
+        "path213",
+        "HU"
       ],
-      "treasury": 3970,
-      "atWar": []
+      "treasury": 23905,
+      "atWar": [
+        "Hungary"
+      ]
     },
     "Croatia": {
       "color": "#363a4e",
       "capital": "path167",
       "code": "HR",
       "ProvincesSoldiers": {
-        "path167": 100,
-        "path171": 100,
-        "path170": 100,
-        "path172": 2333,
-        "path146": 1860,
-        "path145": 6325,
-        "path168": 100
+        "path167": 758,
+        "path171": 12283,
+        "path170": 21817,
+        "path172": 12182,
+        "path146": 4695,
+        "path145": 24623,
+        "path168": 10235
       },
       "provinces": [
         "path167",
@@ -597,7 +691,7 @@
         "path145",
         "path168"
       ],
-      "treasury": 7930,
+      "treasury": 20845,
       "atWar": []
     },
     "Bosnia and Herzegovina": {
@@ -605,12 +699,12 @@
       "capital": "path174",
       "code": "BA",
       "ProvincesSoldiers": {
-        "path174": 1410,
-        "path176": 5150,
-        "path177": 100,
+        "path174": 17585,
+        "path176": 22080,
+        "path177": 19555,
         "path180": 100,
-        "path173": 2625,
-        "path175": 4475
+        "path173": 17665,
+        "path175": 21445
       },
       "provinces": [
         "path174",
@@ -620,7 +714,7 @@
         "path173",
         "path175"
       ],
-      "treasury": 6940,
+      "treasury": 18010,
       "atWar": []
     },
     "Montenegro": {
@@ -628,16 +722,16 @@
       "capital": "path186",
       "code": "ME",
       "ProvincesSoldiers": {
-        "ME": 1748,
-        "path186": 1303,
-        "path185": 3895
+        "ME": 14779,
+        "path186": 11888,
+        "path185": 32792
       },
       "provinces": [
         "ME",
         "path186",
         "path185"
       ],
-      "treasury": 3970,
+      "treasury": 9505,
       "atWar": []
     },
     "Albania": {
@@ -645,10 +739,10 @@
       "capital": "path188",
       "code": "AL",
       "ProvincesSoldiers": {
-        "AL": 1140,
-        "path188": 2900,
-        "path189": 6960,
-        "path187": 6100
+        "AL": 16280,
+        "path188": 19800,
+        "path189": 19750,
+        "path187": 5200
       },
       "provinces": [
         "AL",
@@ -656,7 +750,7 @@
         "path189",
         "path187"
       ],
-      "treasury": 4960,
+      "treasury": 12340,
       "atWar": []
     },
     "Kosovo": {
@@ -664,14 +758,14 @@
       "capital": "path190",
       "code": "XK",
       "ProvincesSoldiers": {
-        "XK": 3805,
-        "path190": 3450
+        "XK": 11560,
+        "path190": 17065
       },
       "provinces": [
         "XK",
         "path190"
       ],
-      "treasury": 2980,
+      "treasury": 6670,
       "atWar": []
     },
     "Serbia": {
@@ -679,13 +773,13 @@
       "capital": "path193",
       "code": "RS",
       "ProvincesSoldiers": {
-        "RS": 3621,
-        "path193": 3435,
-        "path192": 100,
-        "path195": 100,
-        "path197": 4251,
-        "path196": 1388,
-        "path194": 6455
+        "RS": 14831,
+        "path193": 7716,
+        "path192": 26486,
+        "path195": 17537,
+        "path197": 31897,
+        "path196": 16535,
+        "path194": 11338
       },
       "provinces": [
         "RS",
@@ -696,7 +790,7 @@
         "path196",
         "path194"
       ],
-      "treasury": 7930,
+      "treasury": 20845,
       "atWar": []
     },
     "North Macedonia": {
@@ -704,33 +798,80 @@
       "capital": "path198",
       "code": "MK",
       "ProvincesSoldiers": {
-        "MK": 6100,
-        "path198": 2400,
-        "path199": 5470,
-        "path200": 100
+        "path199": 0,
+        "path200": 0,
+        "path253": 0,
+        "path254": 309530,
+        "path255": 0
       },
       "provinces": [
-        "MK",
-        "path198",
         "path199",
-        "path200"
+        "path200",
+        "path253",
+        "path253",
+        "path254",
+        "path254",
+        "path255",
+        "path254",
+        "path255",
+        "path254",
+        "path255",
+        "path254",
+        "path255",
+        "path254",
+        "path253",
+        "path254",
+        "path255",
+        "path254",
+        "path255",
+        "path254",
+        "path255",
+        "path254",
+        "path255",
+        "path255",
+        "path255",
+        "path254",
+        "path255",
+        "path254",
+        "path255",
+        "path254",
+        "path254",
+        "path255",
+        "path254",
+        "path255",
+        "path254",
+        "path255",
+        "path254",
+        "path255",
+        "path254",
+        "path255",
+        "path254",
+        "path255",
+        "path254",
+        "path255",
+        "path254",
+        "path255",
+        "path254",
+        "path254"
       ],
-      "treasury": 4960,
-      "atWar": []
+      "treasury": 64135,
+      "atWar": [
+        "Greece"
+      ]
     },
     "Bulgaria": {
       "color": "#0f8d59",
       "capital": "path204",
       "code": "BG",
       "ProvincesSoldiers": {
-        "BG": 3840,
-        "path204": 100,
-        "path203": 2580,
-        "path205": 100,
-        "path208": 4020,
-        "path209": 1500,
-        "path207": 2760,
-        "path279": 100
+        "BG": 100,
+        "path204": 17980,
+        "path203": 33380,
+        "path205": 13660,
+        "path208": 12980,
+        "path209": 6500,
+        "path207": 22120,
+        "path279": 16900
       },
       "provinces": [
         "BG",
@@ -742,7 +883,7 @@
         "path207",
         "path279"
       ],
-      "treasury": 8920,
+      "treasury": 23680,
       "atWar": []
     },
     "Hungary": {
@@ -750,25 +891,56 @@
       "capital": "path213",
       "code": "HU",
       "ProvincesSoldiers": {
-        "HU": 1388,
-        "path213": 3435,
-        "path214": 1545,
-        "path215": 3593,
-        "path212": 1860,
-        "path211": 100,
-        "path210": 100
+        "path215": 0,
+        "path212": 0,
+        "path211": 0,
+        "path210": 0,
+        "path140": 0,
+        "path141": 0,
+        "SI": 35294,
+        "path14": 0,
+        "path236": 320485
       },
       "provinces": [
-        "HU",
-        "path213",
-        "path214",
         "path215",
         "path212",
         "path211",
-        "path210"
+        "path210",
+        "path140",
+        "path141",
+        "path141",
+        "SI",
+        "path141",
+        "SI",
+        "path141",
+        "SI",
+        "SI",
+        "path141",
+        "SI",
+        "path141",
+        "SI",
+        "path14",
+        "path236",
+        "path14",
+        "path236",
+        "SI",
+        "path14",
+        "SI",
+        "path236",
+        "path141",
+        "path14",
+        "SI",
+        "path236",
+        "path141",
+        "path14",
+        "SI",
+        "path236"
       ],
-      "treasury": 7930,
-      "atWar": []
+      "treasury": 33850,
+      "atWar": [
+        "Slovenia",
+        "Ukraine"
+      ]
     },
     "Romania": {
       "color": "#912f7a",
@@ -776,20 +948,20 @@
       "code": "RO",
       "ProvincesSoldiers": {
         "RO": 100,
-        "path201": 100,
-        "path216": 7350,
-        "path219": 7688,
-        "path221": 4988,
+        "path201": 50189,
+        "path216": 100,
+        "path219": 18825,
+        "path221": 13088,
         "path224": 100,
         "path222": 100,
-        "path225": 3800,
+        "path225": 39739,
         "path228": 100,
-        "path230": 100,
+        "path230": 11738,
         "path229": 100,
-        "path233": 4313,
-        "path232": 938,
-        "path234": 100,
-        "path235": 100
+        "path233": 12750,
+        "path232": 17638,
+        "path234": 4313,
+        "path235": 16800
       },
       "provinces": [
         "RO",
@@ -808,7 +980,7 @@
         "path234",
         "path235"
       ],
-      "treasury": 15850,
+      "treasury": 43525,
       "atWar": []
     },
     "Greece": {
@@ -816,31 +988,28 @@
       "capital": "path275",
       "code": "GR",
       "ProvincesSoldiers": {
-        "GR": 100,
-        "path275": 100,
-        "path255": 1028,
-        "path254": 100,
-        "path260": 100,
-        "path262": 100,
-        "path270": 7440,
-        "path269": 100,
-        "path276": 100,
-        "path277": 100,
-        "path278": 100,
-        "path267": 100,
-        "path266": 100,
-        "path263": 100,
-        "path258": 100,
-        "path253": 100,
-        "path251": 100,
-        "path252": 100,
-        "path237": 100
+        "GR": 0,
+        "path275": 0,
+        "path260": 0,
+        "path262": 0,
+        "path270": 0,
+        "path269": 0,
+        "path276": 0,
+        "path277": 0,
+        "path278": 0,
+        "path267": 0,
+        "path266": 0,
+        "path263": 0,
+        "path258": 0,
+        "path251": 0,
+        "path252": 0,
+        "path237": 0,
+        "MK": 269898,
+        "path198": 0
       },
       "provinces": [
         "GR",
         "path275",
-        "path255",
-        "path254",
         "path260",
         "path262",
         "path270",
@@ -852,13 +1021,61 @@
         "path266",
         "path263",
         "path258",
-        "path253",
         "path251",
         "path252",
-        "path237"
+        "path237",
+        "MK",
+        "path198",
+        "path198",
+        "path198",
+        "MK",
+        "path198",
+        "MK",
+        "path198",
+        "path198",
+        "MK",
+        "path198",
+        "MK",
+        "path198",
+        "MK",
+        "path198",
+        "MK",
+        "path198",
+        "MK",
+        "path198",
+        "MK",
+        "path198",
+        "path198",
+        "MK",
+        "path198",
+        "MK",
+        "path198",
+        "MK",
+        "path198",
+        "MK",
+        "path198",
+        "MK",
+        "path198",
+        "MK",
+        "path198",
+        "MK",
+        "path198",
+        "MK",
+        "path198",
+        "MK",
+        "path198",
+        "MK",
+        "path198",
+        "MK",
+        "path198",
+        "MK",
+        "path198",
+        "MK"
       ],
-      "treasury": 19810,
-      "atWar": []
+      "treasury": 106615,
+      "atWar": [
+        "North Macedonia"
+      ]
     },
     "Cyprus": {
       "color": "#b46f04",
@@ -874,7 +1091,7 @@
         "path33",
         "path27"
       ],
-      "treasury": 3970,
+      "treasury": 9505,
       "atWar": []
     },
     "Slovakia": {
@@ -883,11 +1100,11 @@
       "code": "SK",
       "ProvincesSoldiers": {
         "SK": 100,
-        "path8": 4975,
-        "path24": 100,
-        "path36": 4840,
-        "path58": 9485,
-        "path4": 3165
+        "path8": 48880,
+        "path24": 8255,
+        "path36": 10685,
+        "path58": 18165,
+        "path4": 29060
       },
       "provinces": [
         "SK",
@@ -897,7 +1114,7 @@
         "path58",
         "path4"
       ],
-      "treasury": 6940,
+      "treasury": 18010,
       "atWar": []
     },
     "Czech Republic": {
@@ -905,13 +1122,13 @@
       "capital": "path69",
       "code": "CZ",
       "ProvincesSoldiers": {
-        "CZ": 2518,
-        "path69": 3593,
-        "path74": 100,
-        "path68": 4881,
-        "path67": 100,
-        "path66": 3463,
-        "path59": 7715
+        "CZ": 9633,
+        "path69": 11023,
+        "path74": 8948,
+        "path68": 15776,
+        "path67": 7558,
+        "path66": 15303,
+        "path59": 12598
       },
       "provinces": [
         "CZ",
@@ -922,7 +1139,7 @@
         "path66",
         "path59"
       ],
-      "treasury": 7930,
+      "treasury": 20845,
       "atWar": []
     },
     "Austria": {
@@ -931,31 +1148,37 @@
       "code": "AT",
       "ProvincesSoldiers": {
         "AT": 0,
-        "path80": 0,
-        "path89": 0,
-        "path88": 0,
-        "path112": 10334,
-        "path118": 0,
         "path113": 0,
         "path111": 0,
         "path110": 0,
-        "LI": 8113
+        "LI": 0,
+        "CH": 19747,
+        "path122": 158742
       },
       "provinces": [
         "AT",
-        "path80",
-        "path89",
-        "path88",
-        "path112",
-        "path118",
         "path113",
         "path111",
         "path110",
-        "LI"
+        "LI",
+        "CH",
+        "CH",
+        "path122",
+        "CH",
+        "path122",
+        "CH",
+        "path122",
+        "CH",
+        "path122",
+        "CH",
+        "path122",
+        "CH",
+        "path122"
       ],
-      "treasury": 10225,
+      "treasury": 29620,
       "atWar": [
-        "Liechtenstein"
+        "Liechtenstein",
+        "Switzerland"
       ]
     },
     "Switzerland": {
@@ -963,21 +1186,37 @@
       "capital": "path122",
       "code": "CH",
       "ProvincesSoldiers": {
-        "CH": 1500,
-        "path122": 825,
-        "path123": 100,
-        "path126": 100,
-        "path119": 5488
+        "path123": 0,
+        "path126": 0,
+        "path119": 0,
+        "path112": 0,
+        "path118": 0,
+        "path88": 0,
+        "path80": 78315,
+        "path89": 0
       },
       "provinces": [
-        "CH",
-        "path122",
         "path123",
         "path126",
-        "path119"
+        "path119",
+        "path112",
+        "path118",
+        "path88",
+        "path88",
+        "path80",
+        "path89",
+        "path80",
+        "path112",
+        "path118",
+        "path88",
+        "path80",
+        "path89",
+        "path80"
       ],
-      "treasury": 5950,
-      "atWar": []
+      "treasury": 18370,
+      "atWar": [
+        "Austria"
+      ]
     },
     "Liechtenstein": {
       "color": "#1b233b",
@@ -985,7 +1224,7 @@
       "code": "LI",
       "ProvincesSoldiers": {},
       "provinces": [],
-      "treasury": 1675,
+      "treasury": 2620,
       "atWar": [
         "Austria"
       ]
@@ -994,26 +1233,25 @@
       "color": "#983239",
       "capital": "LU",
       "code": "LU",
-      "ProvincesSoldiers": {
-        "LU": 6127
-      },
-      "provinces": [
-        "LU"
-      ],
-      "treasury": 1990,
-      "atWar": []
+      "ProvincesSoldiers": {},
+      "provinces": [],
+      "treasury": 3565,
+      "atWar": [
+        "Belgium"
+      ]
     },
     "Belgium": {
       "color": "#a8b012",
       "capital": "BE",
       "code": "BE",
       "ProvincesSoldiers": {
-        "BE": 4745,
-        "path127": 4975,
-        "path132": 2355,
-        "path133": 2490,
-        "path135": 3570,
-        "path139": 100
+        "BE": 0,
+        "path127": 22558,
+        "path132": 0,
+        "path133": 0,
+        "path135": 0,
+        "path139": 0,
+        "LU": 3623
       },
       "provinces": [
         "BE",
@@ -1021,10 +1259,13 @@
         "path132",
         "path133",
         "path135",
-        "path139"
+        "path139",
+        "LU"
       ],
-      "treasury": 6940,
-      "atWar": []
+      "treasury": 18280,
+      "atWar": [
+        "Luxembourg"
+      ]
     },
     "Netherlands": {
       "color": "#c15023",
@@ -1032,12 +1273,12 @@
       "code": "NL",
       "ProvincesSoldiers": {
         "path149": 100,
-        "path138": 100,
-        "path158": 100,
-        "path178": 8260,
+        "path138": 20600,
+        "path158": 13660,
+        "path178": 16720,
         "path179": 100,
-        "path169": 3300,
-        "path166": 4020,
+        "path169": 27840,
+        "path166": 16500,
         "path159": 100
       },
       "provinces": [
@@ -1050,7 +1291,7 @@
         "path166",
         "path159"
       ],
-      "treasury": 8920,
+      "treasury": 23680,
       "atWar": []
     },
     "Portugal": {
@@ -1058,15 +1299,15 @@
       "capital": "path1",
       "code": "PT",
       "ProvincesSoldiers": {
-        "path1": 13953,
-        "path191": 1208,
+        "path1": 100,
+        "path191": 10928,
         "path202": 100,
-        "path206": 2220,
-        "path220": 100,
-        "path218": 3638,
-        "path239": 5758,
-        "path238": 100,
-        "path227": 100
+        "path206": 21445,
+        "path220": 9308,
+        "path218": 100,
+        "path239": 12846,
+        "path238": 16788,
+        "path227": 1005
       },
       "provinces": [
         "path1",
@@ -1079,7 +1320,7 @@
         "path238",
         "path227"
       ],
-      "treasury": 9910,
+      "treasury": 26515,
       "atWar": []
     },
     "United Kingdom": {
@@ -1087,9 +1328,9 @@
       "capital": "path248",
       "code": "GB",
       "ProvincesSoldiers": {
-        "path248": 20990,
-        "path268": 53355,
-        "path247": 8750,
+        "path248": 139035,
+        "path268": 143065,
+        "path247": 160690,
         "path245": 100,
         "path271": 100,
         "path274": 100,
@@ -1158,7 +1399,7 @@
         "path315",
         "path240"
       ],
-      "treasury": 34660,
+      "treasury": 97390,
       "atWar": []
     },
     "Italy": {
@@ -1197,20 +1438,20 @@
         "path375": 100,
         "path376": 100,
         "path377": 100,
-        "path378": 100,
-        "path379": 100,
-        "path381": 100,
+        "path378": 80576,
+        "path379": 29963,
+        "path381": 60338,
         "path380": 100,
-        "path382": 3638,
+        "path382": 30975,
         "path383": 100,
         "path384": 100,
         "path385": 100,
         "path387": 100,
         "path386": 100,
-        "path388": 100,
-        "path389": 100,
-        "path391": 6675,
-        "path390": 100
+        "path388": 103363,
+        "path389": 100325,
+        "path391": 57289,
+        "path390": 59825
       },
       "provinces": [
         "IT",
@@ -1259,7 +1500,7 @@
         "path391",
         "path390"
       ],
-      "treasury": 45550,
+      "treasury": 128575,
       "atWar": []
     },
     "Spain": {
@@ -1269,27 +1510,27 @@
       "ProvincesSoldiers": {
         "ES": 100,
         "path23": 100,
-        "path11": 100,
+        "path11": 158026,
         "path217": 100,
         "path226": 100,
         "path223": 100,
         "path231": 100,
         "path241": 100,
         "path242": 100,
-        "path243": 100,
-        "path244": 13763,
+        "path243": 66913,
+        "path244": 20338,
         "path246": 100,
         "path256": 100,
         "path250": 100,
         "path257": 100,
         "path264": 100,
-        "path261": 32488,
+        "path261": 13251,
         "path265": 100,
-        "path272": 1613,
+        "path272": 100,
         "path280": 100,
-        "path289": 11738,
-        "path286": 15788,
-        "path290": 8700,
+        "path289": 59826,
+        "path286": 100,
+        "path290": 75013,
         "path291": 100,
         "path307": 100,
         "path329": 100,
@@ -1306,12 +1547,12 @@
         "path344": 100,
         "path345": 100,
         "path330": 100,
-        "path322": 7688,
+        "path322": 10725,
         "path316": 100,
         "path303": 100,
         "path294": 100,
         "path293": 100,
-        "path292": 100
+        "path292": 117025
       },
       "provinces": [
         "ES",
@@ -1360,10 +1601,10 @@
         "path293",
         "path292"
       ],
-      "treasury": 45550,
+      "treasury": 128575,
       "atWar": []
     }
   },
   "maxWars": 5,
-  "currentWars": 0
+  "currentWars": 3
 }

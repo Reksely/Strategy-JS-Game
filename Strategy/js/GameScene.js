@@ -1,54 +1,52 @@
 class GameScene extends Phaser.Scene {
   constructor() {
     super('GameScene');
-
     this.mapData = null;
     this.countries = null;
     this.selectedCountry = null;
     this.selectedProvince = null;
     this.previousProvince = null;
+    this.hoveredProvince = null;
     this.moveToMode = false;
     this.recruitMode = false;
-    this._lastZoom = -1;
+    this.recruitCost = 0.25;
 
     // Graphics layers
     this.fillGfx = null;
     this.strokeGfx = null;
-    this.highlightGfx = null;
+    this.hoverGfx = null;
+    this.selectGfx = null;
 
-    // Province polygon cache for hit testing
-    this.provincePolygons = {}; // id -> Phaser.Geom.Polygon
-
-    // Soldier text objects
+    // Province polygon cache
+    this.provincePolygons = {};
     this.soldierTexts = {};
-
-    // Network + UI
     this.net = null;
     this.ui = null;
 
-    // Recruitment cost
-    this.recruitCost = 0.25;
+    // Smooth camera state
+    this._targetZoom = 1;
+    this._lastZoom = -1;
+    this._isDragging = false;
+    this._dragStartX = 0;
+    this._dragStartY = 0;
   }
 
-  preload() {
-    // Map data loaded via global MAP_DATA from js/mapdata.js (avoids CORS with file://)
-  }
+  preload() {}
 
   create() {
     this.mapData = MAP_DATA;
     this.ui = new UIManager();
     this.net = new NetworkManager();
 
-    // Set up graphics layers (draw order matters)
+    // Graphics layers in draw order
     this.fillGfx = this.add.graphics();
     this.strokeGfx = this.add.graphics();
-    this.highlightGfx = this.add.graphics();
+    this.hoverGfx = this.add.graphics();
+    this.selectGfx = this.add.graphics();
 
-    // Set world bounds to match SVG viewBox
     const vb = this.mapData.viewBox;
-    this.cameras.main.setBounds(vb.x - 50, vb.y - 50, vb.width + 100, vb.height + 100);
+    this.cameras.main.setBounds(vb.x - 100, vb.y - 100, vb.width + 200, vb.height + 200);
 
-    // Connect to server
     this.net.connect().then(() => {
       this.net.on('sessionInit', (msg) => this.onSessionInit(msg));
       this.net.on('startSession', (msg) => this.onStartSession(msg));
@@ -56,45 +54,69 @@ class GameScene extends Phaser.Scene {
       this.net.on('warChange', (msg) => this.onGameChange(msg));
       this.net.on('recruitSoldiersByUser', (msg) => this.onRecruit(msg));
       this.net.on('declareWar', (msg) => this.onDeclareWar(msg));
+      this.net.on('playerAttack', (msg) => this.onGameChange(msg));
     });
 
     this.setupCamera();
     this.setupInput();
     this.setupUICallbacks();
 
-    // Hide loading after a moment
-    this.time.delayedCall(800, () => {
-      this.ui.hideLoading();
-    });
+    this.time.delayedCall(600, () => this.ui.hideLoading());
   }
 
   update() {
-    // Keep text at a constant screen-pixel size regardless of zoom
-    const zoom = this.cameras.main.zoom;
-    if (Math.abs(zoom - this._lastZoom) > 0.001) {
+    const cam = this.cameras.main;
+
+    // Smooth zoom lerp centered on pointer
+    if (Math.abs(cam.zoom - this._targetZoom) > 0.001 && this._zoomPointerScreen) {
+      // Get world point under pointer BEFORE zoom change
+      const wp = cam.getWorldPoint(this._zoomPointerScreen.x, this._zoomPointerScreen.y);
+
+      cam.zoom = Phaser.Math.Linear(cam.zoom, this._targetZoom, 0.12);
+
+      // Get world point under pointer AFTER zoom change
+      const wp2 = cam.getWorldPoint(this._zoomPointerScreen.x, this._zoomPointerScreen.y);
+
+      // Shift camera so the same world point stays under the pointer
+      cam.scrollX += wp.x - wp2.x;
+      cam.scrollY += wp.y - wp2.y;
+    }
+
+    // Scale text to constant screen size
+    const zoom = cam.zoom;
+    if (Math.abs(zoom - this._lastZoom) > 0.002) {
       this._lastZoom = zoom;
-      const textScale = 0.5 / zoom;
+      const s = 0.45 / zoom;
       for (const id in this.soldierTexts) {
-        this.soldierTexts[id].setScale(textScale);
+        this.soldierTexts[id].setScale(s);
+      }
+    }
+
+    // Hover detection
+    const pointer = this.input.activePointer;
+    if (!pointer.isDown) {
+      const wp = cam.getWorldPoint(pointer.x, pointer.y);
+      const hov = this.getProvinceAtPoint(wp.x, wp.y);
+      if (hov !== this.hoveredProvince) {
+        this.hoveredProvince = hov;
+        this.drawHover(hov);
       }
     }
   }
 
-  // --- Network message handlers ---
+  // ======================== NETWORK HANDLERS ========================
 
   onSessionInit(msg) {
     this.countries = JSON.parse(msg.sessionInfo).countries;
+    this.buildPolygons();
     this.drawAllProvinces();
     this.createSoldierTexts();
     this.createCapitalStars();
 
-    // Center camera on the map
     const vb = this.mapData.viewBox;
+    this._targetZoom = Math.min(this.scale.width / vb.width, this.scale.height / vb.height) * 0.95;
+    this.cameras.main.zoom = this._targetZoom;
     this.cameras.main.centerOn(vb.x + vb.width / 2, vb.y + vb.height / 2);
-    this.cameras.main.setZoom(Math.min(
-      this.scale.width / vb.width,
-      this.scale.height / vb.height
-    ) * 0.9);
   }
 
   onStartSession(msg) {
@@ -114,9 +136,7 @@ class GameScene extends Phaser.Scene {
   }
 
   onRecruit(msg) {
-    if (this.selectedCountry) {
-      this.ui.updateTreasury(Math.floor(msg.updatedTreasury));
-    }
+    if (this.selectedCountry) this.ui.updateTreasury(Math.floor(msg.updatedTreasury));
     if (this.selectedProvince && msg.updatedSoldiersCount !== undefined) {
       this.updateSoldierText(this.selectedProvince, msg.updatedSoldiersCount);
     }
@@ -128,197 +148,191 @@ class GameScene extends Phaser.Scene {
     this.updateAllSoldierTexts();
   }
 
-  // --- Drawing ---
+  // ======================== DRAWING ========================
+
+  _drawPoly(gfx, pts) {
+    gfx.moveTo(pts[0], pts[1]);
+    for (let i = 2; i < pts.length; i += 2) gfx.lineTo(pts[i], pts[i + 1]);
+    gfx.closePath();
+  }
+
+  buildPolygons() {
+    const provs = this.mapData.provinces;
+    for (const id in provs) {
+      const pts = provs[id].p;
+      if (pts.length < 6) continue;
+      const gp = [];
+      for (let i = 0; i < pts.length; i += 2) gp.push(new Phaser.Geom.Point(pts[i], pts[i + 1]));
+      this.provincePolygons[id] = new Phaser.Geom.Polygon(gp);
+    }
+  }
 
   drawAllProvinces() {
     this.fillGfx.clear();
     this.strokeGfx.clear();
-
     const provs = this.mapData.provinces;
+
+    // Fills
     for (const id in provs) {
-      const prov = provs[id];
-      const pts = prov.p;
+      const pts = provs[id].p;
       if (pts.length < 6) continue;
+      const owner = this.getProvinceOwner(id);
+      const color = (owner && this.countries[owner]) ? this.hexToInt(this.countries[owner].color) : 0xd0d0d0;
 
-      // Determine fill color
-      let color = 0xececec; // default gray
-      const ownerCountry = this.getProvinceOwner(id);
-      if (ownerCountry && this.countries[ownerCountry]) {
-        color = this.hexToInt(this.countries[ownerCountry].color);
-      }
-
-      // Draw fill
       this.fillGfx.fillStyle(color, 1);
       this.fillGfx.beginPath();
-      this.fillGfx.moveTo(pts[0], pts[1]);
-      for (let i = 2; i < pts.length; i += 2) {
-        this.fillGfx.lineTo(pts[i], pts[i + 1]);
-      }
-      this.fillGfx.closePath();
+      this._drawPoly(this.fillGfx, pts);
       this.fillGfx.fillPath();
+    }
 
-      // Draw stroke
-      this.strokeGfx.lineStyle(0.3, 0x000000, 0.6);
+    // Province borders (thin)
+    this.strokeGfx.lineStyle(0.4, 0x1a1a1a, 0.5);
+    for (const id in provs) {
+      const pts = provs[id].p;
+      if (pts.length < 6) continue;
       this.strokeGfx.beginPath();
-      this.strokeGfx.moveTo(pts[0], pts[1]);
-      for (let i = 2; i < pts.length; i += 2) {
-        this.strokeGfx.lineTo(pts[i], pts[i + 1]);
-      }
-      this.strokeGfx.closePath();
+      this._drawPoly(this.strokeGfx, pts);
       this.strokeGfx.strokePath();
+    }
 
-      // Build polygon for hit testing
-      const geomPoints = [];
-      for (let i = 0; i < pts.length; i += 2) {
-        geomPoints.push(new Phaser.Geom.Point(pts[i], pts[i + 1]));
+    // Country borders (thicker) - draw where neighboring provinces have different owners
+    this.strokeGfx.lineStyle(1.0, 0x000000, 0.9);
+    for (const id in provs) {
+      const pts = provs[id].p;
+      if (pts.length < 6) continue;
+      const owner = this.getProvinceOwner(id);
+      // Check if this province borders a different country
+      const neighbors = this.getAdjacentProvinces(id);
+      let isBorder = false;
+      for (const nid of neighbors) {
+        if (this.getProvinceOwner(nid) !== owner) { isBorder = true; break; }
       }
-      this.provincePolygons[id] = new Phaser.Geom.Polygon(geomPoints);
+      if (isBorder) {
+        this.strokeGfx.beginPath();
+        this._drawPoly(this.strokeGfx, pts);
+        this.strokeGfx.strokePath();
+      }
     }
   }
 
   redrawProvinces() {
-    this.fillGfx.clear();
-    this.strokeGfx.clear();
-
-    const provs = this.mapData.provinces;
-    for (const id in provs) {
-      const prov = provs[id];
-      const pts = prov.p;
-      if (pts.length < 6) continue;
-
-      let color = 0xececec;
-      const ownerCountry = this.getProvinceOwner(id);
-      if (ownerCountry && this.countries[ownerCountry]) {
-        color = this.hexToInt(this.countries[ownerCountry].color);
-      }
-
-      this.fillGfx.fillStyle(color, 1);
-      this.fillGfx.beginPath();
-      this.fillGfx.moveTo(pts[0], pts[1]);
-      for (let i = 2; i < pts.length; i += 2) {
-        this.fillGfx.lineTo(pts[i], pts[i + 1]);
-      }
-      this.fillGfx.closePath();
-      this.fillGfx.fillPath();
-
-      this.strokeGfx.lineStyle(0.3, 0x000000, 0.6);
-      this.strokeGfx.beginPath();
-      this.strokeGfx.moveTo(pts[0], pts[1]);
-      for (let i = 2; i < pts.length; i += 2) {
-        this.strokeGfx.lineTo(pts[i], pts[i + 1]);
-      }
-      this.strokeGfx.closePath();
-      this.strokeGfx.strokePath();
-    }
-
-    // Redraw highlight if active
-    if (this.selectedProvince) {
-      this.drawHighlight(this.selectedProvince);
-    }
+    this.drawAllProvinces();
+    if (this.selectedProvince) this.drawSelection(this.selectedProvince);
   }
 
-  drawHighlight(provinceId) {
-    this.highlightGfx.clear();
+  drawHover(provinceId) {
+    this.hoverGfx.clear();
+    if (!provinceId || provinceId === this.selectedProvince) return;
     const prov = this.mapData.provinces[provinceId];
-    if (!prov) return;
+    if (!prov || prov.p.length < 6) return;
 
-    const pts = prov.p;
-    if (pts.length < 6) return;
-
-    // Bright highlight fill
-    let color = 0xffffff;
     const owner = this.getProvinceOwner(provinceId);
-    if (owner && this.countries[owner]) {
-      color = this.brightenColor(this.hexToInt(this.countries[owner].color), 0.4);
-    }
+    const baseColor = (owner && this.countries[owner]) ? this.hexToInt(this.countries[owner].color) : 0xd0d0d0;
+    const bright = this.brightenColor(baseColor, 0.25);
 
-    this.highlightGfx.fillStyle(color, 0.8);
-    this.highlightGfx.beginPath();
-    this.highlightGfx.moveTo(pts[0], pts[1]);
-    for (let i = 2; i < pts.length; i += 2) {
-      this.highlightGfx.lineTo(pts[i], pts[i + 1]);
-    }
-    this.highlightGfx.closePath();
-    this.highlightGfx.fillPath();
+    this.hoverGfx.fillStyle(bright, 0.6);
+    this.hoverGfx.beginPath();
+    this._drawPoly(this.hoverGfx, prov.p);
+    this.hoverGfx.fillPath();
 
-    // Thick bright stroke
-    this.highlightGfx.lineStyle(1, 0xffffff, 0.9);
-    this.highlightGfx.beginPath();
-    this.highlightGfx.moveTo(pts[0], pts[1]);
-    for (let i = 2; i < pts.length; i += 2) {
-      this.highlightGfx.lineTo(pts[i], pts[i + 1]);
-    }
-    this.highlightGfx.closePath();
-    this.highlightGfx.strokePath();
+    this.hoverGfx.lineStyle(0.8, 0xffffff, 0.5);
+    this.hoverGfx.beginPath();
+    this._drawPoly(this.hoverGfx, prov.p);
+    this.hoverGfx.strokePath();
   }
+
+  drawSelection(provinceId) {
+    this.selectGfx.clear();
+    if (!provinceId) return;
+    const prov = this.mapData.provinces[provinceId];
+    if (!prov || prov.p.length < 6) return;
+
+    const owner = this.getProvinceOwner(provinceId);
+    const baseColor = (owner && this.countries[owner]) ? this.hexToInt(this.countries[owner].color) : 0xd0d0d0;
+    const bright = this.brightenColor(baseColor, 0.45);
+
+    // Glow outline (wide, semi-transparent)
+    this.selectGfx.lineStyle(2.5, 0xffffff, 0.35);
+    this.selectGfx.beginPath();
+    this._drawPoly(this.selectGfx, prov.p);
+    this.selectGfx.strokePath();
+
+    // Bright fill
+    this.selectGfx.fillStyle(bright, 0.7);
+    this.selectGfx.beginPath();
+    this._drawPoly(this.selectGfx, prov.p);
+    this.selectGfx.fillPath();
+
+    // Sharp inner border
+    this.selectGfx.lineStyle(1.0, 0xffffff, 0.8);
+    this.selectGfx.beginPath();
+    this._drawPoly(this.selectGfx, prov.p);
+    this.selectGfx.strokePath();
+  }
+
+  // ======================== TEXT & ICONS ========================
 
   createSoldierTexts() {
-    const provs = this.mapData.provinces;
-    for (const id in provs) {
-      const prov = provs[id];
+    for (const id in this.mapData.provinces) {
+      const prov = this.mapData.provinces[id];
       const text = this.add.text(prov.cx, prov.cy, '', {
         fontSize: '32px',
-        fontFamily: 'Arial, sans-serif',
+        fontFamily: 'monospace',
         color: '#ffffff',
         fontStyle: 'bold',
         stroke: '#000000',
-        strokeThickness: 3,
-        resolution: 4
+        strokeThickness: 4,
+        resolution: 3
       });
       text.setOrigin(0.5, 0.5);
       text.setVisible(false);
+      text.setDepth(10);
       this.soldierTexts[id] = text;
     }
   }
 
   updateAllSoldierTexts() {
     if (!this.countries) return;
-    for (const country in this.countries) {
-      const data = this.countries[country];
-      for (const province in data.ProvincesSoldiers) {
-        this.updateSoldierText(province, data.ProvincesSoldiers[province]);
-      }
+    if (this.selectedCountry) this.showSoldierTextsForCountry();
+    else {
+      for (const id in this.soldierTexts) this.soldierTexts[id].setVisible(false);
     }
   }
 
   updateSoldierText(provinceId, count) {
     const text = this.soldierTexts[provinceId];
     if (!text) return;
-    if (count === 0 || count === undefined) {
-      text.setVisible(false);
-    } else {
-      text.setText(String(count));
-      text.setVisible(this.selectedCountry !== null);
-    }
+    if (!count || count === 0) { text.setVisible(false); return; }
+    text.setText(String(count));
+    // Only show if in the visible set (own + bordering)
+    text.setVisible(this._visibleProvinces ? this._visibleProvinces.has(provinceId) : false);
   }
 
   showSoldierTextsForCountry() {
     if (!this.selectedCountry || !this.countries) return;
-    // Show texts for own provinces and bordering provinces
-    const ownProvinces = this.countries[this.selectedCountry].provinces;
-    const visibleSet = new Set(ownProvinces);
+    const own = this.countries[this.selectedCountry].provinces;
+    const visible = new Set(own);
 
-    // Also show neighboring provinces
-    for (const pid of ownProvinces) {
-      const neighbors = this.getAdjacentProvinces(pid);
-      for (const nid of neighbors) visibleSet.add(nid);
-    }
-
-    for (const id in this.soldierTexts) {
-      const shouldShow = visibleSet.has(id);
-      const text = this.soldierTexts[id];
-      if (shouldShow) {
-        const owner = this.getProvinceOwner(id);
-        if (owner && this.countries[owner]) {
-          const count = this.countries[owner].ProvincesSoldiers[id];
-          if (count !== undefined && count > 0) {
-            text.setText(String(count));
-            text.setVisible(true);
-            continue;
-          }
+    // Add provinces that directly border your country
+    for (const pid of own) {
+      for (const nid of this.getAdjacentProvinces(pid)) {
+        if (this.getProvinceOwner(nid) !== this.selectedCountry) {
+          visible.add(nid);
         }
       }
-      text.setVisible(false);
+    }
+
+    this._visibleProvinces = visible;
+
+    for (const id in this.soldierTexts) {
+      const t = this.soldierTexts[id];
+      if (!visible.has(id)) { t.setVisible(false); continue; }
+      const owner = this.getProvinceOwner(id);
+      if (owner && this.countries[owner]) {
+        const c = this.countries[owner].ProvincesSoldiers[id];
+        if (c && c > 0) { t.setText(String(c)); t.setVisible(true); continue; }
+      }
+      t.setVisible(false);
     }
   }
 
@@ -326,84 +340,72 @@ class GameScene extends Phaser.Scene {
     if (!this.countries) return;
     for (const country in this.countries) {
       const data = this.countries[country];
-      const capitalId = data.capital;
-      const prov = this.mapData.provinces[capitalId];
+      const prov = this.mapData.provinces[data.capital];
       if (!prov) continue;
-
-      // Draw a small star at the capital
-      const star = this.add.star(prov.cx, prov.cy, 5, 1.5, 3, 0xffff00);
-      star.setStrokeStyle(0.3, 0x000000);
+      const star = this.add.star(prov.cx, prov.cy, 5, 1.2, 2.8, 0xffd700);
+      star.setStrokeStyle(0.4, 0x000000);
+      star.setDepth(11);
     }
   }
 
-  // --- Camera ---
+  // ======================== CAMERA ========================
 
   setupCamera() {
     const cam = this.cameras.main;
 
     // Drag to pan
     this.input.on('pointermove', (pointer) => {
-      if (pointer.isDown && pointer.button === 0) {
-        const dx = (pointer.x - pointer.prevPosition.x) / cam.zoom;
-        const dy = (pointer.y - pointer.prevPosition.y) / cam.zoom;
-        cam.scrollX -= dx;
-        cam.scrollY -= dy;
-      }
+      if (!pointer.isDown) return;
+      // Only drag with left button or middle button
+      if (pointer.button !== 0 && pointer.button !== 1) return;
+      cam.scrollX -= (pointer.x - pointer.prevPosition.x) / cam.zoom;
+      cam.scrollY -= (pointer.y - pointer.prevPosition.y) / cam.zoom;
     });
 
-    // Scroll to zoom
-    this.input.on('wheel', (pointer, gameObjects, deltaX, deltaY) => {
-      const zoomFactor = deltaY > 0 ? 0.9 : 1.1;
-      const newZoom = Phaser.Math.Clamp(cam.zoom * zoomFactor, 0.3, 10);
-
-      // Zoom toward pointer position
-      const worldPoint = cam.getWorldPoint(pointer.x, pointer.y);
-      cam.zoom = newZoom;
-      const newWorldPoint = cam.getWorldPoint(pointer.x, pointer.y);
-      cam.scrollX += worldPoint.x - newWorldPoint.x;
-      cam.scrollY += worldPoint.y - newWorldPoint.y;
+    // Scroll-to-zoom: store target + pointer world position for centering
+    this.input.on('wheel', (pointer, _go, _dx, deltaY) => {
+      const factor = deltaY > 0 ? 0.92 : 1.08;
+      this._targetZoom = Phaser.Math.Clamp(this._targetZoom * factor, 0.4, 8);
+      // Remember where the pointer is in world space so update() can zoom toward it
+      this._zoomPointerWorld = cam.getWorldPoint(pointer.x, pointer.y);
+      this._zoomPointerScreen = { x: pointer.x, y: pointer.y };
     });
   }
 
-  // --- Input ---
+  // ======================== INPUT ========================
 
   setupInput() {
     this.input.on('pointerdown', (pointer) => {
       if (pointer.button !== 0) return;
       this._dragStartX = pointer.x;
       this._dragStartY = pointer.y;
+      this._isDragging = false;
+    });
+
+    this.input.on('pointermove', (pointer) => {
+      if (!pointer.isDown || pointer.button !== 0) return;
+      const dist = Phaser.Math.Distance.Between(this._dragStartX, this._dragStartY, pointer.x, pointer.y);
+      if (dist > 6) this._isDragging = true;
     });
 
     this.input.on('pointerup', (pointer) => {
-      if (pointer.button !== 0) return;
-
-      // Ignore if this was a drag (moved more than 5px)
-      const dist = Phaser.Math.Distance.Between(
-        this._dragStartX, this._dragStartY, pointer.x, pointer.y
-      );
-      if (dist > 5) return;
-
-      // Convert screen to world coordinates
-      const worldPoint = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
-      const clickedId = this.getProvinceAtPoint(worldPoint.x, worldPoint.y);
-
-      if (clickedId) {
-        this.onProvinceClick(clickedId);
-      }
+      if (pointer.button !== 0 || this._isDragging) return;
+      const wp = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
+      const clicked = this.getProvinceAtPoint(wp.x, wp.y);
+      if (clicked) this.onProvinceClick(clicked);
     });
 
     // Keyboard shortcuts
     this.input.keyboard.on('keydown-R', () => {
-      if (this.selectedCountry && this.selectedProvince) {
-        const owner = this.getProvinceOwner(this.selectedProvince);
-        if (owner === this.selectedCountry) this.toggleRecruit();
+      if (this.selectedCountry && this.selectedProvince &&
+          this.getProvinceOwner(this.selectedProvince) === this.selectedCountry) {
+        this.toggleRecruit();
       }
     });
-
     this.input.keyboard.on('keydown-M', () => {
-      if (this.selectedCountry && this.selectedProvince) {
-        const owner = this.getProvinceOwner(this.selectedProvince);
-        if (owner === this.selectedCountry) this.toggleMoveTo();
+      if (this.selectedCountry && this.selectedProvince &&
+          this.getProvinceOwner(this.selectedProvince) === this.selectedCountry) {
+        this.toggleMoveTo();
       }
     });
   }
@@ -413,7 +415,7 @@ class GameScene extends Phaser.Scene {
     this.ui.setCallback('onMoveToClick', () => this.toggleMoveTo());
   }
 
-  // --- Province click handling ---
+  // ======================== PROVINCE CLICK ========================
 
   onProvinceClick(provinceId) {
     const clickedCountry = this.getProvinceOwner(provinceId);
@@ -421,7 +423,7 @@ class GameScene extends Phaser.Scene {
     // Country selection phase
     if (!this.selectedCountry) {
       if (!clickedCountry) return;
-      if (confirm(`Are you sure you want to select ${clickedCountry}?`)) {
+      if (confirm(`Select ${clickedCountry}?`)) {
         this.selectedCountry = clickedCountry;
         this.ui.hideCountrySelection();
         this.ui.showCountryFlag(this.countries[clickedCountry].code);
@@ -432,20 +434,16 @@ class GameScene extends Phaser.Scene {
       return;
     }
 
-    // Handle move-to mode
+    // Move-to / attack mode
     if (this.moveToMode && this.previousProvince) {
-      const destCountry = clickedCountry;
-      const sliderValue = this.ui.getSliderValue();
-
-      if (destCountry === this.selectedCountry) {
-        // Move soldiers within own territory
-        this.moveSoldiers(this.selectedCountry, this.previousProvince, provinceId, sliderValue, destCountry, false);
+      const slider = this.ui.getSliderValue();
+      if (clickedCountry === this.selectedCountry) {
+        this.moveSoldiers(this.selectedCountry, this.previousProvince, provinceId, slider, clickedCountry, false);
         this.moveToMode = false;
         this.ui.hideSlider();
         this.previousProvince = provinceId;
-      } else if (this.countries[this.selectedCountry].atWar.includes(destCountry)) {
-        // Attack enemy province
-        this.attackProvince(this.selectedCountry, this.selectedProvince, destCountry, provinceId, sliderValue, this.previousProvince);
+      } else if (this.countries[this.selectedCountry].atWar.includes(clickedCountry)) {
+        this.attackProvince(this.selectedCountry, this.selectedProvince, clickedCountry, provinceId, slider, this.previousProvince);
       } else {
         this.ui.showModal('Cannot Attack', 'Declare war on a country to attack it.', 'OK');
         this.moveToMode = false;
@@ -454,53 +452,40 @@ class GameScene extends Phaser.Scene {
       return;
     }
 
-    // Normal province selection
+    // Normal selection
     this.selectedProvince = provinceId;
-    this.drawHighlight(provinceId);
+    this.drawSelection(provinceId);
 
-    // Show info panel
     if (clickedCountry) {
       const isOwn = clickedCountry === this.selectedCountry;
       const isAtWar = this.countries[this.selectedCountry].atWar.includes(clickedCountry);
       this.ui.showInfoPanel(clickedCountry, this.countries[clickedCountry].code, isOwn, isAtWar);
+      this.ui.showButtons(isOwn, isOwn);
 
-      if (isOwn) {
-        this.ui.showButtons(true, true);
-      } else {
-        this.ui.showButtons(false, false);
-      }
-
-      // Set war button callback
       this.ui.setCallback('onDeclareWarClick', () => {
-        if (confirm(`Are you sure you want to declare war on ${clickedCountry}?`)) {
+        if (confirm(`Declare war on ${clickedCountry}?`)) {
           this.net.declareWar(this.selectedCountry, clickedCountry);
         }
       });
     }
 
-    if (!this.moveToMode) {
-      this.previousProvince = provinceId;
-    }
+    if (!this.moveToMode) this.previousProvince = provinceId;
   }
 
-  // --- Game actions ---
+  // ======================== GAME ACTIONS ========================
 
   toggleRecruit() {
     this.recruitMode = !this.recruitMode;
     this.moveToMode = false;
-
     if (this.recruitMode) {
-      const maxRecruits = this.getMaxRecruits(this.selectedCountry);
-      this.ui.showSlider(maxRecruits, maxRecruits);
+      this.ui.showSlider(this.getMaxRecruits(this.selectedCountry), this.getMaxRecruits(this.selectedCountry));
     } else {
-      // Confirm recruitment
       const recruits = this.ui.getSliderValue();
       const cost = this.getRecruitmentCost();
-
       if (recruits > 0 && this.countries[this.selectedCountry].treasury >= cost * recruits) {
         this.net.recruitSoldiers(recruits, this.selectedCountry, this.selectedProvince);
       } else if (recruits > 0) {
-        this.ui.showModal('Insufficient Funds', 'Not enough money. Select fewer soldiers.', 'OK');
+        this.ui.showModal('Insufficient Funds', 'Not enough money to recruit.', 'OK');
       }
       this.ui.hideSlider();
     }
@@ -509,201 +494,99 @@ class GameScene extends Phaser.Scene {
   toggleMoveTo() {
     this.moveToMode = !this.moveToMode;
     this.recruitMode = false;
-
     if (this.moveToMode && this.selectedProvince) {
-      const soldiers = this.countries[this.selectedCountry].ProvincesSoldiers[this.selectedProvince] || 0;
-      this.ui.showSlider(soldiers, soldiers);
+      const s = this.countries[this.selectedCountry].ProvincesSoldiers[this.selectedProvince] || 0;
+      this.ui.showSlider(s, s);
     } else {
       this.ui.hideSlider();
     }
   }
 
-  getRecruitmentCost() {
-    this.recruitCost += 0.06;
-    return this.recruitCost;
-  }
+  getRecruitmentCost() { this.recruitCost += 0.06; return this.recruitCost; }
 
   getMaxRecruits(country) {
-    const treasury = this.countries[country].treasury;
-    const cost = this.getRecruitmentCost();
-    return Math.max(0, Math.floor(treasury / cost));
+    return Math.max(0, Math.floor(this.countries[country].treasury / this.getRecruitmentCost()));
   }
 
-  // --- Combat (client-side resolution for player actions) ---
+  // ======================== COMBAT ========================
 
-  attackProvince(sourceCountry, sourceProvince, destCountry, destProvince, attackStrength, previousProv) {
-    if (!this.countries[sourceCountry].atWar.includes(destCountry)) return;
-
-    // Check adjacency
-    if (!this.areAdjacent(previousProv, destProvince)) {
+  attackProvince(srcCountry, srcProv, dstCountry, dstProv, strength, prevProv) {
+    if (!this.countries[srcCountry].atWar.includes(dstCountry)) return;
+    if (!this.areAdjacent(prevProv, dstProv)) {
       this.ui.showModal('Invalid Attack', 'You can only attack bordering provinces.', 'OK');
       return;
     }
-
-    const defenderStrength = this.countries[destCountry].ProvincesSoldiers[destProvince] || 0;
-
-    if (attackStrength > defenderStrength) {
-      this.resolveVictory(sourceCountry, destCountry, destProvince, attackStrength, sourceProvince, defenderStrength, previousProv);
-    } else {
-      this.resolveDefeat(sourceCountry, sourceProvince, destCountry, attackStrength, defenderStrength, previousProv);
-    }
-
+    // Send to server - server resolves and sends back updated state
+    this.net.playerAttack(srcCountry, srcProv, dstCountry, dstProv, strength, prevProv);
     this.moveToMode = false;
     this.ui.hideSlider();
-    this.showSoldierTextsForCountry();
   }
 
-  resolveVictory(sourceCountry, destCountry, province, attackStrength, sourceProvince, defenderStrength, previousProv) {
-    // Transfer province
-    const idx = this.countries[destCountry].provinces.indexOf(province);
-    if (idx !== -1) this.countries[destCountry].provinces.splice(idx, 1);
-    this.countries[sourceCountry].provinces.push(province);
+  moveSoldiers(src, from, to, amount, dst, isAttack) {
+    if (!src || !from || !to || amount <= 0) return;
+    if (this.countries[src].ProvincesSoldiers[from] !== undefined)
+      this.countries[src].ProvincesSoldiers[from] = Math.max(0, this.countries[src].ProvincesSoldiers[from] - amount);
+    if (!isAttack && this.countries[src].ProvincesSoldiers[to] !== undefined)
+      this.countries[src].ProvincesSoldiers[to] += amount;
+    this.updateSoldierText(from, this.countries[src].ProvincesSoldiers[from]);
+    this.updateSoldierText(to, this.countries[src].ProvincesSoldiers[to]);
 
-    // Update soldiers
-    delete this.countries[destCountry].ProvincesSoldiers[province];
-    this.countries[sourceCountry].ProvincesSoldiers[province] = attackStrength - defenderStrength;
-
-    // Deduct from source
-    if (this.countries[sourceCountry].ProvincesSoldiers[previousProv] !== undefined) {
-      this.countries[sourceCountry].ProvincesSoldiers[previousProv] = Math.max(0,
-        this.countries[sourceCountry].ProvincesSoldiers[previousProv] - attackStrength);
-    }
-
-    this.redrawProvinces();
-    this.updateAllSoldierTexts();
-
-    // Check for country elimination
-    if (this.countries[destCountry].provinces.length === 0) {
-      if (destCountry === this.selectedCountry) {
-        this.ui.showModal('Defeat!', 'Your country has collapsed! All provinces lost.', 'It was fun!');
-      } else {
-        this.ui.showModal(`${destCountry} Collapsed!`, `${destCountry} has lost all provinces.`, 'Good news!');
-      }
-    }
+    // Sync to server
+    this.net.send('moveSoldiers', {
+      country: src, fromProvince: from, toProvince: to, amount: amount
+    });
   }
 
-  resolveDefeat(sourceCountry, sourceProvince, destCountry, attackStrength, defenderStrength, previousProv) {
-    const attackerSoldiers = this.countries[sourceCountry].ProvincesSoldiers[previousProv] || 0;
-    const defenderSoldiers = this.countries[destCountry].ProvincesSoldiers[sourceProvince] || 0;
+  // ======================== HELPERS ========================
 
-    if (attackerSoldiers >= defenderSoldiers) {
-      this.countries[sourceCountry].ProvincesSoldiers[previousProv] = attackerSoldiers - defenderSoldiers;
-      this.countries[destCountry].ProvincesSoldiers[sourceProvince] = 0;
-    } else {
-      this.countries[destCountry].ProvincesSoldiers[sourceProvince] = defenderSoldiers - attackerSoldiers;
-      this.countries[sourceCountry].ProvincesSoldiers[previousProv] = 0;
-    }
-
-    this.updateAllSoldierTexts();
-  }
-
-  moveSoldiers(sourceCountry, sourceProv, destProv, amount, destCountry, isAttacking) {
-    if (!sourceCountry || !sourceProv || !destProv || amount <= 0) return;
-
-    if (this.countries[sourceCountry].ProvincesSoldiers[sourceProv] !== undefined) {
-      this.countries[sourceCountry].ProvincesSoldiers[sourceProv] = Math.max(0,
-        this.countries[sourceCountry].ProvincesSoldiers[sourceProv] - amount);
-    }
-
-    if (!isAttacking) {
-      if (this.countries[sourceCountry].ProvincesSoldiers[destProv] !== undefined) {
-        this.countries[sourceCountry].ProvincesSoldiers[destProv] += amount;
-      }
-    }
-
-    this.updateSoldierText(sourceProv, this.countries[sourceCountry].ProvincesSoldiers[sourceProv]);
-    this.updateSoldierText(destProv, this.countries[sourceCountry].ProvincesSoldiers[destProv]);
-  }
-
-  // --- Helpers ---
-
-  getProvinceOwner(provinceId) {
+  getProvinceOwner(id) {
     if (!this.countries) return null;
-    // First check mapdata (static assignment)
-    const prov = this.mapData.provinces[provinceId];
-    if (prov && prov.c) {
-      // But verify against live countries data (ownership can change)
-      for (const country in this.countries) {
-        if (this.countries[country].provinces.includes(provinceId)) {
-          return country;
-        }
-      }
-      return prov.c;
+    for (const c in this.countries) {
+      if (this.countries[c].provinces.includes(id)) return c;
     }
-    // Fallback: search countries
-    for (const country in this.countries) {
-      if (this.countries[country].provinces.includes(provinceId)) {
-        return country;
-      }
-    }
-    return null;
+    const p = this.mapData.provinces[id];
+    return p ? p.c : null;
   }
 
   getProvinceAtPoint(x, y) {
-    // Check all province polygons for containment
-    // Check smaller provinces first (more specific) by sorting by area estimate
-    const ids = Object.keys(this.provincePolygons);
-    for (const id of ids) {
-      if (Phaser.Geom.Polygon.Contains(this.provincePolygons[id], x, y)) {
-        return id;
-      }
+    for (const id in this.provincePolygons) {
+      if (Phaser.Geom.Polygon.Contains(this.provincePolygons[id], x, y)) return id;
     }
     return null;
   }
 
-  areAdjacent(prov1, prov2) {
-    if (!prov1 || !prov2) return false;
-    const d1 = this.mapData.provinces[prov1];
-    const d2 = this.mapData.provinces[prov2];
+  areAdjacent(a, b) {
+    if (!a || !b) return false;
+    const d1 = this.mapData.provinces[a], d2 = this.mapData.provinces[b];
     if (!d1 || !d2) return false;
-
-    // Simple bbox overlap check (same as the backend bboxesIntersect)
-    const margin = 2; // Small margin for adjacent provinces
-    const ax = d1.cx - margin, ay = d1.cy - margin;
-    const bx = d2.cx - margin, by = d2.cy - margin;
-
-    // Compute bboxes from points
-    let minX1=Infinity, minY1=Infinity, maxX1=-Infinity, maxY1=-Infinity;
-    for (let i = 0; i < d1.p.length; i += 2) {
-      minX1 = Math.min(minX1, d1.p[i]); minY1 = Math.min(minY1, d1.p[i+1]);
-      maxX1 = Math.max(maxX1, d1.p[i]); maxY1 = Math.max(maxY1, d1.p[i+1]);
-    }
-    let minX2=Infinity, minY2=Infinity, maxX2=-Infinity, maxY2=-Infinity;
-    for (let i = 0; i < d2.p.length; i += 2) {
-      minX2 = Math.min(minX2, d2.p[i]); minY2 = Math.min(minY2, d2.p[i+1]);
-      maxX2 = Math.max(maxX2, d2.p[i]); maxY2 = Math.max(maxY2, d2.p[i+1]);
-    }
-
-    return !(maxX1 < minX2 || maxX2 < minX1 || maxY1 < minY2 || maxY2 < minY1);
+    let x1=Infinity,y1=Infinity,X1=-Infinity,Y1=-Infinity;
+    for (let i=0;i<d1.p.length;i+=2){x1=Math.min(x1,d1.p[i]);y1=Math.min(y1,d1.p[i+1]);X1=Math.max(X1,d1.p[i]);Y1=Math.max(Y1,d1.p[i+1]);}
+    let x2=Infinity,y2=Infinity,X2=-Infinity,Y2=-Infinity;
+    for (let i=0;i<d2.p.length;i+=2){x2=Math.min(x2,d2.p[i]);y2=Math.min(y2,d2.p[i+1]);X2=Math.max(X2,d2.p[i]);Y2=Math.max(Y2,d2.p[i+1]);}
+    return !(X1<x2||X2<x1||Y1<y2||Y2<y1);
   }
 
-  getAdjacentProvinces(provinceId) {
-    const result = [];
-    const provs = this.mapData.provinces;
-    for (const otherId in provs) {
-      if (otherId !== provinceId && this.areAdjacent(provinceId, otherId)) {
-        result.push(otherId);
-      }
+  getAdjacentProvinces(id) {
+    const r = [];
+    for (const o in this.mapData.provinces) {
+      if (o !== id && this.areAdjacent(id, o)) r.push(o);
     }
-    return result;
+    return r;
   }
 
   hexToInt(hex) {
-    if (!hex) return 0xececec;
+    if (!hex) return 0xd0d0d0;
     if (hex === 'grey') return 0x808080;
     if (hex === 'red') return 0xff0000;
     if (hex === 'green') return 0x008000;
-    hex = hex.replace('#', '');
-    return parseInt(hex, 16);
+    return parseInt(hex.replace('#', ''), 16);
   }
 
-  brightenColor(color, amount) {
-    let r = (color >> 16) & 0xff;
-    let g = (color >> 8) & 0xff;
-    let b = color & 0xff;
-    r = Math.min(255, r + Math.floor((255 - r) * amount));
-    g = Math.min(255, g + Math.floor((255 - g) * amount));
-    b = Math.min(255, b + Math.floor((255 - b) * amount));
-    return (r << 16) | (g << 8) | b;
+  brightenColor(c, a) {
+    let r=(c>>16)&0xff, g=(c>>8)&0xff, b=c&0xff;
+    r=Math.min(255,r+Math.floor((255-r)*a));
+    g=Math.min(255,g+Math.floor((255-g)*a));
+    b=Math.min(255,b+Math.floor((255-b)*a));
+    return (r<<16)|(g<<8)|b;
   }
 }

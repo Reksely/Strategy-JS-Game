@@ -4,111 +4,75 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Strategy by reks.dev</title>
-
-  <!-- Bootstrap 5.2.2 CSS -->
-  <link
-    rel="stylesheet"
-    href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"
-  />
-
-  <!-- Game styles -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-  <!-- Phaser renders into this container -->
   <div id="game-container"></div>
 
-  <!-- ====== HTML overlay elements (float on top of the Phaser canvas) ====== -->
-
-  <!-- 1. Loading screen -->
+  <!-- Loading -->
   <div id="loading-screen">
-    <div class="spinner-border text-primary" role="status">
+    <div class="spinner-border" role="status">
       <span class="visually-hidden">Loading...</span>
     </div>
-    <p>Loading a game</p>
+    <p>Loading game</p>
   </div>
 
-  <!-- 2. Country selection overlay -->
+  <!-- Country selection -->
   <div id="overlay-box">
-    <span class="overlay-text">Please choose a country</span>
+    <span class="overlay-text">Choose your country</span>
   </div>
 
-  <!-- 3. Country flag box (top-left) -->
-  <div id="country-flag-box">
-    <img id="country-flag" src="" alt="Country flag" />
+  <!-- HUD: Flag -->
+  <div id="country-flag-box" class="game-panel">
+    <img id="country-flag" src="" alt="Flag" />
   </div>
 
-  <!-- 4. Money box (top-left, below flag) -->
-  <div id="money-box">
-    <img src="cdn/money-icon.png" alt="Money" />
+  <!-- HUD: Treasury -->
+  <div id="money-box" class="game-panel">
+    <img src="cdn/money-icon.png" alt="$" />
     <span id="money-amount">0</span>
   </div>
 
-  <!-- 5. Info container (bottom-right, selected province info) -->
-  <div id="info-container">
-    <img id="info-flag" src="" alt="Province flag" />
+  <!-- Info panel -->
+  <div id="info-container" class="game-panel">
+    <img id="info-flag" src="" alt="" />
     <div id="info-name"></div>
     <div id="info-buttons"></div>
   </div>
 
-  <!-- 6. Controls bar (bottom full-width) -->
+  <!-- Bottom controls -->
   <div id="controls-bar">
-    <button id="btn-recruit" class="btn btn-success btn-sm">Recruit</button>
-    <button id="btn-move" class="btn btn-primary btn-sm">Move To</button>
+    <button id="btn-recruit" class="game-btn game-btn-recruit">Recruit (R)</button>
+    <button id="btn-move" class="game-btn game-btn-move">Move To (M)</button>
   </div>
 
-  <!-- 7. Slider container (centered bottom) -->
-  <div id="slider-container">
+  <!-- Slider -->
+  <div id="slider-container" class="game-panel">
     <input type="range" id="slider" min="0" max="100" value="50" />
     <div class="slider-value">50</div>
   </div>
 
-  <!-- 8. Bootstrap modal for game events -->
-  <div
-    class="modal fade"
-    id="collapseModal"
-    tabindex="-1"
-    aria-labelledby="collapseModalLabel"
-    aria-hidden="true"
-  >
+  <!-- Modal -->
+  <div class="modal fade" id="collapseModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="collapseModalLabel">Event</h5>
-          <button
-            type="button"
-            class="btn-close"
-            data-bs-dismiss="modal"
-            aria-label="Close"
-          ></button>
+          <h5 class="modal-title">Event</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        <div class="modal-body" id="collapseModalBody"><p></p></div>
+        <div class="modal-body"><p></p></div>
         <div class="modal-footer">
-          <button
-            type="button"
-            class="btn btn-secondary"
-            data-bs-dismiss="modal"
-          >
-            Close
-          </button>
+          <button type="button" class="btn" data-bs-dismiss="modal">Close</button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- ====== Scripts ====== -->
-
-  <!-- Phaser 3 -->
+  <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"></script>
-
-  <!-- jQuery 3.6.0 slim (for Bootstrap modals) -->
-  <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.slim.min.js"></script>
-
-  <!-- Bootstrap 5.2.2 JS bundle -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
-
-  <!-- Game scripts (loaded in order) -->
   <script src="js/mapdata.js"></script>
   <script src="js/network.js"></script>
   <script src="js/ui.js"></script>
