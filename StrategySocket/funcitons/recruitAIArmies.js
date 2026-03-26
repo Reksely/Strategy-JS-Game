@@ -4,27 +4,13 @@ const getBorderProvincesWithCountry = require('../utils/getBorderProvincesWithCo
 const getBorderProvinces = require('../utils/getBorderProvinces.js')
 const modifySoldiers = require("../utils/modifySoldiers.js")
 
-// Recruitment cost starts at 1
-let recruitCost = 0.25;
+// Recruitment cost for AI (fixed rate, not escalating)
+const AI_RECRUIT_COST = 0.5;
 
-function getRecruitmentCost() {
-
-  // Increment cost each time
-  recruitCost += 0.06;
-
-  return recruitCost;
-
-}
-
-function getMaxRecruits(countr, countries) {
-
-  // Get max recruit amount based on treasury
-
-  let treasury = countries[countr].treasury;
-  let cost = getRecruitmentCost();
-
-  return Math.floor(treasury / cost) - 500;
-
+function getMaxRecruits(country, countries) {
+  let treasury = countries[country].treasury;
+  let maxRecruits = Math.floor(treasury / AI_RECRUIT_COST);
+  return Math.max(0, maxRecruits);
 }
 
 
@@ -41,15 +27,21 @@ async function recruitAIArmies(sessionID, selectedCountry) {
     const recruitChance = Math.min(countries[country].treasury / 500, 0.3);
     if (Math.random() < recruitChance) {
       let enemyCountries = countries[country].atWar;
-      if (enemyCountries.length > 0) {
-        let borders = await getBorderProvincesWithCountry(country, enemyCountries[0], countries);
-        let province = borders[Math.floor(Math.random() * borders.length)];
-        await modifySoldiers(country, province, Math.round(getMaxRecruits(country, countries) / 3), sessionID);
-      } else {
-        let borders =  await getBorderProvinces(country, countries);
+      let maxRecruits = getMaxRecruits(country, countries);
+      if (maxRecruits <= 0) continue;
 
+      if (enemyCountries.length > 0) {
+        let borders = getBorderProvincesWithCountry(country, enemyCountries[0], countries);
+        if (borders.length === 0) continue;
         let province = borders[Math.floor(Math.random() * borders.length)];
-        await modifySoldiers(country, province, Math.round(getMaxRecruits(country, countries) / 4), sessionID);
+        let amount = Math.max(1, Math.round(maxRecruits / 3));
+        await modifySoldiers(country, province, amount, sessionID);
+      } else {
+        let borders = getBorderProvinces(country, countries);
+        if (borders.length === 0) continue;
+        let province = borders[Math.floor(Math.random() * borders.length)];
+        let amount = Math.max(1, Math.round(maxRecruits / 4));
+        await modifySoldiers(country, province, amount, sessionID);
       }
     }
   }

@@ -1,26 +1,22 @@
 const getAdjoiningPaths = require('./getAdJoiningPaths.js')
-async function getBorderProvinces(country, countries) {
 
+function getBorderProvinces(country, countries) {
   const provinces = countries[country].provinces;
-
   const borderProvinces = [];
 
-  provinces.forEach( async province => {
-
-    const paths = await getAdjoiningPaths(province);
-    paths.forEach(path => {
+  for (const province of provinces) {
+    const paths = getAdjoiningPaths(province);
+    for (const path of paths) {
       if (path) {
         const otherCountry = path.getAttribute('data-country');
-
         if (otherCountry !== country) {
           borderProvinces.push(province);
+          break; // Only need to add province once
         }
       }
-    });
-
-  });
+    }
+  }
 
   return borderProvinces;
-
 }
 module.exports = getBorderProvinces

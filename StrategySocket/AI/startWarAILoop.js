@@ -3,83 +3,97 @@ const path = require('path');
 const getBorderProvincesWithCountry = require('../utils/getBorderProvincesWithCountry');
 const getAdjoiningPaths = require('../utils/getAdJoiningPaths');
 const attackProvince = require("../warSystem/attackProvince");
-function startWarAILoop(attacker, defender, sessionData, selectedCountry, client, sessionID) {
 
-  let currentWars = sessionData.currentWars;
-  const countries = sessionData.countries;
-  let loopCount = 0;
+function startWarAILoop(attacker, defender, sessionData, selectedCountry, client, sessionID) {
+  // Track war intervals on client for cleanup on disconnect
+  if (!client._warIntervals) client._warIntervals = [];
+
+  const TICK_MS = 6000; // Attack every 6 seconds
 
   const loop = setInterval(() => {
-    if (loopCount >= 5) {
-      clearInterval(loop);
-      startWarAILoop(attacker, defender, sessionData, selectedCountry, client, sessionID);
-      return;
-    }
-
-    if (countries[attacker].provinces.length === 0 || countries[defender].provinces.length === 0) {
-      currentWars--;
+    // Re-read fresh session data each tick
+    let currentSessionData;
+    try {
+      const sessionDataPath = path.resolve(__dirname, `../sessions/${sessionID}.json`);
+      currentSessionData = JSON.parse(fs.readFileSync(sessionDataPath, "utf8"));
+    } catch (e) {
       clearInterval(loop);
       return;
     }
 
-    const aiCountries = Object.keys(countries);
-    aiCountries.forEach((aiCountry) => {
-      const enemyCountries = countries[aiCountry].atWar;
-      enemyCountries.forEach(async (enemyCountry) => {
-        const aiBorderProvinces = getBorderProvincesWithCountry(aiCountry, enemyCountry, countries);
+    const countries = currentSessionData.countries;
 
-        aiBorderProvinces.forEach((aiProvince) => {
-          // Validate AI province belongs to AI
-          if (!countries[aiCountry].provinces.includes(aiProvince)) return console.log("it doesn't belong to AI");
+    // Stop if either side is eliminated
+    if (!countries[attacker] || !countries[defender] ||
+        countries[attacker].provinces.length === 0 ||
+        countries[defender].provinces.length === 0) {
+      if (currentSessionData.currentWars > 0) currentSessionData.currentWars--;
+      const writePath = path.resolve(__dirname, `../sessions/${sessionID}.json`);
+      fs.writeFileSync(writePath, JSON.stringify(currentSessionData, null, 2));
+      clearInterval(loop);
+      return;
+    }
 
-          const aiPaths = getAdjoiningPaths(aiProvince);
-          aiPaths.forEach((path) => {
-            // Check if path borders
-            const otherCountry = path.getAttribute("data-country");
-            if (otherCountry == enemyCountry) {
-              const enemyProvince = path.id;
-              const enemySoldiers = countries[enemyCountry].ProvincesSoldiers[enemyProvince];
-              const aiSoldiers = countries[aiCountry].ProvincesSoldiers[aiProvince];
+    // Stop if no longer at war
+    if (!countries[attacker].atWar.includes(defender)) {
+      clearInterval(loop);
+      return;
+    }
 
-              if (aiSoldiers >= enemySoldiers * 1.30 && aiCountry !== selectedCountry) {
-                console.log(
-                  `${aiCountry} from province ${aiProvince} attacking ${enemyCountry} province ${enemyProvince} with ${aiSoldiers} amount of soldiers`
-                );
+    // Don't let the player's own country be auto-piloted
+    if (attacker === selectedCountry) {
+      clearInterval(loop);
+      return;
+    }
 
-                attackProvince(
-                  aiCountry,
-                  aiProvince,
-                  enemyCountry,
-                  enemyProvince,
-                  aiSoldiers,
-                  aiProvince,
-                  countries,
-                  client
-                );
+    const aiBorderProvinces = getBorderProvincesWithCountry(attacker, defender, countries);
+    let attacked = false;
 
-                const sessionDataWritePath = `${__dirname}/../sessions/${sessionID}.json`;
-                
-              console.log(`Resolved path: ${sessionDataWritePath}`);
-              fs.writeFileSync(sessionDataWritePath, JSON.stringify(sessionData, null, 2)); 
-              }
-            }
-          });
-        });
-      });
-    });
+    for (const aiProvince of aiBorderProvinces) {
+      if (attacked) break;
+      if (!countries[attacker].provinces.includes(aiProvince)) continue;
 
-    loopCount++;
-    client.send(
-      JSON.stringify({
-        message: "War changed successfully",
+      const aiPaths = getAdjoiningPaths(aiProvince);
+      for (const adjPath of aiPaths) {
+        if (attacked) break;
+        const otherCountry = adjPath.getAttribute("data-country");
+        if (otherCountry === defender) {
+          const enemyProvince = adjPath.id;
+          const enemySoldiers = countries[defender].ProvincesSoldiers[enemyProvince] || 0;
+          const aiSoldiers = countries[attacker].ProvincesSoldiers[aiProvince] || 0;
+
+          // Attack if AI has more soldiers (10% advantage is enough)
+          if (aiSoldiers > enemySoldiers * 1.10 && aiSoldiers > 0) {
+            console.log(`[WAR] ${attacker} (${aiSoldiers}) -> ${defender} ${enemyProvince} (${enemySoldiers})`);
+
+            attackProvince(
+              attacker, aiProvince, defender, enemyProvince,
+              aiSoldiers, aiProvince, countries, client
+            );
+
+            // Save after attack
+            const writePath = path.resolve(__dirname, `../sessions/${sessionID}.json`);
+            fs.writeFileSync(writePath, JSON.stringify(currentSessionData, null, 2));
+            attacked = true;
+          }
+        }
+      }
+    }
+
+    // Send update to client
+    try {
+      client.send(JSON.stringify({
         operation: "warChange",
         sessionInfo: fs.readFileSync(
-          path.resolve(__dirname, `../sessions/${sessionID}.json`),
-          "utf8"
+          path.resolve(__dirname, `../sessions/${sessionID}.json`), "utf8"
         ),
-      })
-    );
-  }, 10000);
+      }));
+    } catch (e) {
+      clearInterval(loop);
+    }
+  }, TICK_MS);
+
+  client._warIntervals.push(loop);
 }
 
 module.exports = startWarAILoop;

@@ -2,69 +2,49 @@ const incrementAllTreasuries = require("./incrementAllTreasuries.js");
 const recruitAIArmies = require("./recruitAIArmies.js")
 const fs = require('fs');
 const path = require('path');
-const { JSDOM } = require('jsdom');
 const setupOwnAIAttacks = require("../AI/setupOwnAIAttacks")
+
 function setupDefaultUserValues(selectedCountry, sessionID) {
-  const sessionDataPath = path.resolve(__dirname, `../sessions/${sessionID}.json`);
-  const sessionData = JSON.parse(fs.readFileSync(sessionDataPath, "utf8"));  
-
-  const countries = sessionData.countries;
- 
-  sessionData.maxWars = 5
-  sessionData.currentWars = 0
-  countries[selectedCountry].recruitCost = 0.25;
-  const sessionDataWritePath = path.resolve(__dirname, `../sessions/${sessionID}.json`);
-
-
-  fs.writeFileSync(sessionDataWritePath, JSON.stringify(sessionData, null, 2));
-}
-
-
-function setupDefaultSVG(sessionID) {
   const sessionDataPath = path.resolve(__dirname, `../sessions/${sessionID}.json`);
   const sessionData = JSON.parse(fs.readFileSync(sessionDataPath, "utf8"));
 
   const countries = sessionData.countries;
 
-  const htmlContent = fs.readFileSync(path.resolve(__dirname, '../html/index.html'), 'utf8');
-  const { window } = new JSDOM(htmlContent);
-  const doc = new window.DOMParser().parseFromString(htmlContent, 'text/html');
+  sessionData.maxWars = 5;
+  sessionData.currentWars = 0;
+  countries[selectedCountry].recruitCost = 0.25;
+  const sessionDataWritePath = path.resolve(__dirname, `../sessions/${sessionID}.json`);
 
-  const svg = doc.querySelector('svg');
-
-  Object.keys(countries).forEach(country => {
-    const data = countries[country];
-    // Get provinces
-    const provinces = data.provinces;
-    provinces.forEach(province => {
-      // Select path by id
-      const provincePath = svg.querySelector(`#${province}`);
-      if (provincePath) { // Check if the provincePath exists to avoid errors
-        provincePath.setAttribute('data-country', country);
-      }
-    });
-  });
-
-  // Write the changes once after all modifications to avoid repeated file writes
-  fs.writeFileSync(path.resolve(__dirname, `../html/index.html`), doc.documentElement.outerHTML);
+  fs.writeFileSync(sessionDataWritePath, JSON.stringify(sessionData, null, 2));
 }
 
 
 async function setupSession(sessionID, client, selectedCountry) {
   // adding additional values
-  setupDefaultUserValues(selectedCountry, sessionID)
- // setupDefaultSVG(sessionID)
-console.log("Started session: " + sessionID)
-  setupOwnAIAttacks(sessionID, selectedCountry, client)
-setInterval( async () => {
+  setupDefaultUserValues(selectedCountry, sessionID);
+  console.log("Started session: " + sessionID);
 
-  await incrementAllTreasuries(sessionID);
-  await recruitAIArmies(sessionID, selectedCountry);
+  const aiInterval = setupOwnAIAttacks(sessionID, selectedCountry, client);
 
-  
-  client.send(JSON.stringify({operation: "constantGameChange", sessionInfo: fs.readFileSync(path.resolve(__dirname, `../sessions/${sessionID}.json`), "utf8")}));
+  const gameInterval = setInterval(async () => {
+    try {
+      await incrementAllTreasuries(sessionID);
+      await recruitAIArmies(sessionID, selectedCountry);
 
-}, 5000);
+      client.send(JSON.stringify({
+        operation: "constantGameChange",
+        sessionInfo: fs.readFileSync(
+          path.resolve(__dirname, `../sessions/${sessionID}.json`), "utf8"
+        )
+      }));
+    } catch (e) {
+      console.log("Game loop error:", e.message);
+    }
+  }, 5000);
+
+  // Store interval handles on the client for cleanup
+  client._gameInterval = gameInterval;
+  client._aiInterval = aiInterval;
 }
 
 module.exports = setupSession

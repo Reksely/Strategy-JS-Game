@@ -2,7 +2,7 @@
 
 A browser-based grand strategy game inspired by Age of History 2, created as a personal project 3 years ago to learn game development and WebSocket programming using JS.
 
-Took hours and multiple reverse engineering of logic in Age of History. This was made in pre-AI era.
+Took hours and multiple reverse engineering of logic in Age of History. This was firstly made in pre-AI era.
 
 ## ⚠️ Disclaimer
 

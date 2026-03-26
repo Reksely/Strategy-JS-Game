@@ -12,7 +12,11 @@ const path = require('path');
 // Delete existing sessions as startup cleanup, ensure this runs once
 const sessionDirectory = path.resolve(__dirname, "./sessions");
 fs.readdirSync(sessionDirectory).forEach(file => {
-  fs.unlinkSync(path.join(sessionDirectory, file));
+  try {
+    fs.unlinkSync(path.join(sessionDirectory, file));
+  } catch (e) {
+    console.log("Failed to clean session file:", e.message);
+  }
 });
 
 // WebSocket connection handling
@@ -23,6 +27,28 @@ wss.on('connection', function connection(ws) {
   ws.on('message', function incoming(message) {
     const parsedMessage = JSON.parse(message);
     operationHandler(parsedMessage, ws).catch(console.error);
+  });
+
+  // Cleanup intervals on disconnect
+  ws.on('close', function() {
+    console.log("Client disconnected: " + sessionID);
+    if (ws._gameInterval) clearInterval(ws._gameInterval);
+    if (ws._aiInterval) clearInterval(ws._aiInterval);
+    if (ws._warIntervals) {
+      ws._warIntervals.forEach(interval => clearInterval(interval));
+    }
+
+    // Clean up session file after intervals are cleared
+    setTimeout(() => {
+      try {
+        const sessionFile = path.resolve(__dirname, `./sessions/${sessionID}.json`);
+        if (fs.existsSync(sessionFile)) {
+          fs.unlinkSync(sessionFile);
+        }
+      } catch (e) {
+        // Ignore - file may already be gone
+      }
+    }, 1000);
   });
 
   const defaultSessionJSON = fs.readFileSync(

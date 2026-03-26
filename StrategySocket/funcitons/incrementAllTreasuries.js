@@ -1,26 +1,24 @@
 const fs = require('fs');
 const path = require('path');
 
-let INCREASE_PER_PROVINCE = 45; // Initial increase amount
-const INCREMENT_AMOUNT = 4; // Amount to increase per province each time
+const INCREASE_PER_PROVINCE = 45; // Fixed increase per province per tick
 
 
 async function incrementAllTreasuries(sessionID) {
   const sessionDataPath = path.resolve(__dirname, `../sessions/${sessionID}.json`);
-  const sessionData = JSON.parse(fs.readFileSync(sessionDataPath, "utf8"));  
+  const sessionData = JSON.parse(fs.readFileSync(sessionDataPath, "utf8"));
   const countries = sessionData.countries;
   // Loop through all countries
-if(!countries) return console.log("There is no countries!")
+  if(!countries) return console.log("There is no countries!");
   Object.keys(countries).forEach(country => {
 
     if(countries[country].provinces.length === 0) return;
 
-    // Get number of provinces   
+    // Get number of provinces
     let numProvinces = countries[country].provinces.length;
 
-    // Calculate increase amount and increment the variable
+    // Calculate increase amount (fixed rate per province)
     let increaseAmount = numProvinces * INCREASE_PER_PROVINCE;
-    INCREASE_PER_PROVINCE += INCREMENT_AMOUNT;
     countries[country].treasury += increaseAmount;
 
   });

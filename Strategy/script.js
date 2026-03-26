@@ -145,15 +145,12 @@ console.log("set value")
   case "getValueFromSession":
 const valueReceived = message.value
     break;
+  case "warChange":
   case "constantGameChange":
-    console.log("constant game change")
     const countriesReceived = JSON.parse(message.sessionInfo).countries;
     countries = countriesReceived;
 
     Object.keys(countriesReceived).forEach(country => {
-
-      //if(countries[country].provinces.length === 0) return;
-    //  if (country == selectedCountry) return;
 
       Object.keys(countriesReceived[country].ProvincesSoldiers).forEach(province => {
       // UI Update
@@ -161,23 +158,28 @@ const valueReceived = message.value
       if (textElementId) {
         const textElement = document.getElementById(textElementId);
         if (textElement) {
-console.log("changed soldiers" + textElement.textContent  + " to " + countriesReceived[country].ProvincesSoldiers[province])
             textElement.textContent = countriesReceived[country].ProvincesSoldiers[province];
-          
         }
       }
-        });
+        // Update province colors based on ownership
+        const provincePath = document.querySelector(`svg #${province}`);
+        if (provincePath) {
+          provincePath.setAttribute('data-country', country);
+          if (countriesReceived[country].color) {
+            provincePath.setAttribute('fill', countriesReceived[country].color);
+          }
+        }
+      });
 
     })
-    
-    let treasury = countriesReceived[selectedCountry].treasury;
-    // Remove decimals
-    treasury = Math.floor(treasury);
 
-    document.getElementById("money-amount").innerHTML = formatNumberWithSpaces(treasury);
+    if (selectedCountry && countriesReceived[selectedCountry]) {
+      let treasury = countriesReceived[selectedCountry].treasury;
+      // Remove decimals
+      treasury = Math.floor(treasury);
+      document.getElementById("money-amount").innerHTML = formatNumberWithSpaces(treasury);
+    }
 
-
-    
     break;
 }
 
@@ -229,8 +231,7 @@ function updateSoldierText() {
 
 }
 
-let INCREASE_PER_PROVINCE = 45; // Initial increase amount
-const INCREMENT_AMOUNT = 4; // Amount to increase per province each time
+const INCREASE_PER_PROVINCE = 45; // Fixed increase per province per tick
 
 function incrementAllTreasuries() {
   updateTreasuryDisplay();
@@ -239,13 +240,12 @@ function incrementAllTreasuries() {
   Object.keys(countries).forEach(country => {
 
     if(countries[country].provinces.length === 0) return;
-    
-    // Get number of provinces   
+
+    // Get number of provinces
     let numProvinces = countries[country].provinces.length;
 
-    // Calculate increase amount and increment the variable
+    // Calculate increase amount (fixed rate)
     let increaseAmount = numProvinces * INCREASE_PER_PROVINCE;
-    INCREASE_PER_PROVINCE += INCREMENT_AMOUNT;
 
     // Increment treasury
     incrementTreasury(country, increaseAmount);
@@ -762,7 +762,7 @@ function resolveDefeat(
   const sourceSoldierTextElement = document.getElementById(`soldiers-text-${previousProvince}`);
 
   if (sourceSoldierTextElement) {
-    sourceSoldierTextElement.textContent = countries[destCountry].ProvincesSoldiers[previousProvince];
+    sourceSoldierTextElement.textContent = countries[sourceCountry].ProvincesSoldiers[previousProvince];
   }
   else {
     console.log("no source")
@@ -1079,7 +1079,7 @@ function getMaxRecruits(countr) {
   let treasury = countries[countr].treasury;
   let cost = getRecruitmentCost();
 
-  return Math.floor(treasury / cost) - 500;
+  return Math.max(0, Math.floor(treasury / cost));
 
 }
 
@@ -1666,9 +1666,7 @@ function declareWar(attacker, defender) {
 
 
 
-setInterval(() => {
-  triggerAIAggression();
-}, 20000);
+// AI aggression is handled server-side to avoid state conflicts
 
 
 // UI

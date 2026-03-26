@@ -5,44 +5,39 @@ const getAdjoiningPaths = require('../utils/getAdJoiningPaths')
 function getNeighbours(borderProvinces) {
   return borderProvinces
     .map(p => getAdjoiningPaths(p))
-    .flatMap(paths => paths.map(p => p.getAttribute('data-country')));  
+    .flatMap(paths => paths.map(p => p.getAttribute('data-country')));
 }
 
 function findWeakest(neighbours, countries) {
-let weakest;
+  let weakest;
   neighbours.forEach(neighbour => {
-
-    if(!weakest) {
+    if (!countries[neighbour] || countries[neighbour].provinces.length === 0) return;
+    if (!weakest) {
       weakest = neighbour;
-    } else if(isWeaker(neighbour, weakest, countries)) {
+    } else if (isWeaker(neighbour, weakest, countries)) {
       weakest = neighbour;
     }
-
   });
-
   return weakest;
-
 }
 
-async function findWeakNeighbour(country, countries) {
+function findWeakNeighbour(country, countries) {
+  // getBorderProvinces is now synchronous
+  const borderProvinces = getBorderProvinces(country, countries);
 
-  // Make sure to await the result of getBorderProvinces
-  const borderProvinces = await getBorderProvinces(country, countries);  
+  if (!borderProvinces || borderProvinces.length === 0) return null;
 
-  // Now borderProvinces should be an array, and you can safely use .map on it
-  let neighbours = getNeighbours(borderProvinces);  
+  let neighbours = getNeighbours(borderProvinces);
 
-  // Continue as before
+  // Filter out self, already at war, null, and eliminated countries
   neighbours = neighbours
     .filter(n => n !== country)
     .filter(n => !countries[country].atWar.includes(n))
-    .filter(n => n);
+    .filter(n => n && countries[n] && countries[n].provinces.length > 0);
 
   // Find weakest
   let weakest = findWeakest(neighbours, countries);
-  //console.log("for " + country + " neighbours are " + neighbours)
   return weakest;
-
 }
 
 module.exports = findWeakNeighbour

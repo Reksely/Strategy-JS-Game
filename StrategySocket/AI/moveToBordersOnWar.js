@@ -1,45 +1,61 @@
-const modifySoldiers = require("../utils/modifySoldiers.js")
 const getBorderProvincesWithCountry = require('../utils/getBorderProvincesWithCountry.js')
 
 const path = require('path')
 const fs = require('fs')
 
-async function moveToBordersOnWar(
+function moveToBordersOnWar(
   country,// ai
   enemyCountry,  //player
   sessionData, sessionID) {
-const countries = sessionData.countries
-  //console.log(enemyCountry)
-  //console.log(countries[enemyCountry])
-  countries[country].atWar.push(enemyCountry);
-  countries[enemyCountry].atWar.push(country);
+  const countries = sessionData.countries;
 
-  // Get all border provinces
-  const borderProvinces =  getBorderProvincesWithCountry(country, enemyCountry, countries);
-//console.log("border provinces: "+ borderProvinces)
-  // Get total soldiers
+  if (!countries[country] || !countries[enemyCountry]) return [];
+
+  // Only add to atWar if not already there
+  if (!countries[country].atWar.includes(enemyCountry)) {
+    countries[country].atWar.push(enemyCountry);
+  }
+  if (!countries[enemyCountry].atWar.includes(country)) {
+    countries[enemyCountry].atWar.push(country);
+  }
+
+  // Get all border provinces (deduplicated)
+  const borderProvincesRaw = getBorderProvincesWithCountry(country, enemyCountry, countries);
+  const borderProvinces = [...new Set(borderProvincesRaw)];
+
+  if (borderProvinces.length === 0) {
+    const sessionDataWritePath = path.resolve(__dirname, `../sessions/${sessionID}.json`);
+    fs.writeFileSync(sessionDataWritePath, JSON.stringify(sessionData, null, 2));
+    return [];
+  }
+
+  // Get total soldiers across ALL provinces
   let totalSoldiers = 0;
-  Object.values(countries[country].ProvincesSoldiers).forEach(count => {
-    totalSoldiers += count;
-  });
-  //console.log(totalSoldiers)
-  // Distribute soldiers evenly
+  for (const province of countries[country].provinces) {
+    totalSoldiers += countries[country].ProvincesSoldiers[province] || 0;
+  }
+
+  // Zero out all province soldiers first
+  for (const province of countries[country].provinces) {
+    countries[country].ProvincesSoldiers[province] = 0;
+  }
+
+  // Distribute soldiers evenly across border provinces
   const soldiersPerProvince = Math.floor(totalSoldiers / borderProvinces.length);
-const changedProvinces = []
-  borderProvinces.forEach(province => {
-    if (changedProvinces.includes(province))  return;
+  let remainder = totalSoldiers - (soldiersPerProvince * borderProvinces.length);
 
-    // Move soldiers to border province
-    modifySoldiers(country, province, soldiersPerProvince, sessionID);
-    console.log("moved for " + province)
-      changedProvinces.push(province);
-    
-  })
-  console.log("done moving")
+  for (const province of borderProvinces) {
+    countries[country].ProvincesSoldiers[province] = soldiersPerProvince;
+    if (remainder > 0) {
+      countries[country].ProvincesSoldiers[province]++;
+      remainder--;
+    }
+  }
+
+  // Write once after all modifications
   const sessionDataWritePath = path.resolve(__dirname, `../sessions/${sessionID}.json`);
+  fs.writeFileSync(sessionDataWritePath, JSON.stringify(sessionData, null, 2));
 
-
-  fs.writeFileSync(sessionDataWritePath, JSON.stringify(sessionData, null, 2)); // Notice sessionData is being written back, not countries
-  return changedProvinces
+  return borderProvinces;
 }
 module.exports = moveToBordersOnWar;

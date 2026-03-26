@@ -1,16 +1,18 @@
 const modifySoldiersForProvince = require('../utils/modifySoldiersForProvince.js')
-const moveSoldiers = require('../utils/moveSoldiers.js')
+const getAdjoiningPaths = require('../utils/getAdJoiningPaths.js')
 
 function resolveVictory(
   sourceCountry,
   destCountry,
   province,
-  remainingStrength, sourceProvince, defenderStrength, previousProvince, svg
+  remainingStrength, sourceProvince, defenderStrength, previousProvince, svg, client, countries
 ) {
 
   // Remove province from defeated country's provinces
   const provinceIndex = countries[destCountry].provinces.indexOf(province);
-  countries[destCountry].provinces.splice(provinceIndex, 1);
+  if (provinceIndex !== -1) {
+    countries[destCountry].provinces.splice(provinceIndex, 1);
+  }
 
   // Add province to winning country's provinces
   countries[sourceCountry].provinces.push(province);
@@ -18,21 +20,23 @@ function resolveVictory(
   // Remove soldiers from defeated province
   delete countries[destCountry].ProvincesSoldiers[province];
 
-
   // Add soldiers to capturing country
+  const remainingSoldiers = remainingStrength - defenderStrength;
   modifySoldiersForProvince(
     sourceCountry,
     province,
-    remainingStrength - defenderStrength,
-    // text element id
+    remainingSoldiers,
+    countries
   );
 
-  moveSoldiers(sourceCountry, previousProvince, province, remainingStrength, destCountry, true, svg);
-
-  
-
-  
+  // Deduct soldiers from source province (they moved to captured province)
+  if (countries[sourceCountry].ProvincesSoldiers[previousProvince] !== undefined) {
+    countries[sourceCountry].ProvincesSoldiers[previousProvince] = Math.max(
+      0,
+      countries[sourceCountry].ProvincesSoldiers[previousProvince] - remainingStrength
+    );
+  }
 }
 
 
-module.exports =  resolveVictory
+module.exports = resolveVictory

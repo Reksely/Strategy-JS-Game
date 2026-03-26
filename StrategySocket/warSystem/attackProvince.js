@@ -1,19 +1,6 @@
-
 const getAdjoiningPaths = require('../utils/getAdJoiningPaths')
-const fs = require('fs');
-const { JSDOM } = require('jsdom');
-const path = require('path')
-const htmlContent = fs.readFileSync(path.resolve(__dirname, '../html/index.html'), 'utf8');
-
-const { window } = new JSDOM(htmlContent);
-
-
-const parser = new window.DOMParser();
-
-const doc = parser.parseFromString(htmlContent, 'text/html');
-
-const svg = doc.querySelector('svg');
-
+const resolveVictory = require('./resolveVictory')
+const resolveDefeat = require('./resolveDefeat')
 
 function attackProvince(
   sourceCountry,
@@ -27,28 +14,25 @@ function attackProvince(
   if (!countries[sourceCountry].atWar.includes(destCountry)) {
     return;
   }
-  const sourceAdjoiningPaths = getAdjoiningPaths(previousProvince);
 
-  const destinationPath = svg.querySelector(`#${destProvince}`);
+  // Check adjacency by comparing IDs (not DOM node references)
+  const adjoiningPaths = getAdjoiningPaths(previousProvince);
+  const adjoiningIds = adjoiningPaths.map(p => p.id || p.getAttribute('id'));
 
-
-  if(!sourceAdjoiningPaths.includes(destinationPath)) {
-   console.log("You can only attack bordering provinces");
+  if (!adjoiningIds.includes(destProvince)) {
+    console.log("You can only attack bordering provinces");
     return;
- }
+  }
 
   // Get defender strength
-  const defenderStrength = countries[destCountry].ProvincesSoldiers[destProvince];
+  const defenderStrength = countries[destCountry].ProvincesSoldiers[destProvince] || 0;
 
   // Resolve battle
   if (attackStrength > defenderStrength) {
-    // Attacker wins
-    resolveVictory(sourceCountry, destCountry, destProvince, attackStrength, sourceProvince, defenderStrength, previousProvince, svg, client);
+    resolveVictory(sourceCountry, destCountry, destProvince, attackStrength, sourceProvince, defenderStrength, previousProvince, null, client, countries);
   } else {
-    // Defender wins  
-    resolveDefeat(sourceCountry, sourceProvince, destCountry, attackStrength, defenderStrength, previousProvince, svg, client);
+    resolveDefeat(sourceCountry, sourceProvince, destCountry, attackStrength, defenderStrength, previousProvince, null, client, countries);
   }
-
 }
 
 module.exports = attackProvince
